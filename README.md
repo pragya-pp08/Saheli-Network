@@ -1,75 +1,110 @@
 # 🌸 Saheli Network
 
-> **Empowering Women. Strengthening Communities.**
-
-## About
-
-Saheli Network is a hyperlocal platform designed to help skilled women in rural and small-town India connect with nearby work opportunities. The platform aims to bridge the gap between talented women and local community needs through a simple, accessible, and user-friendly interface.
-
-The idea was inspired by real-life challenges faced by women who have the skills to earn but often struggle to find opportunities beyond their immediate social circles.
+### *Every woman's skill, found by her community.*
 
 ---
 
-## Problem Statement
+Okay so here's the thing. There are millions of women across small towns and villages in India who can stitch a blouse perfectly, who give the best mehndi in the mohalla, who've been cooking for functions for 15 years — and almost none of them have a way to turn that into a steady income. Not because the demand isn't there. It is. Someone three streets away is *right now* looking for a tailor. They just have no way of finding each other.
 
-Many women possess valuable skills such as tailoring, tutoring, cooking, beauty services, and caregiving, yet they remain economically underutilized due to limited visibility, lack of trusted networks, and difficulty connecting with local demand.
+That's the gap we're trying to close.
 
----
-
-## Solution
-
-Saheli Network provides a platform where women can:
-
-- Create a skill-based profile
-- Discover nearby work opportunities
-- Manage their work orders
-- Build trust through ratings and reviews
-- Track their work and earnings
-- Access business guidance and recovery support (UI Prototype)
+Saheli Network is a hyperlocal platform that connects skilled women to real, local work — and uses AI to do the matchmaking, the trust-building, and even the business advice that usually only comes from years of experience (or a really good chacha in the business).
 
 ---
 
-## Features
+## 📍 Current Status (Being Upfront)
 
-- User-friendly Dashboard
-- Skill-Based Profiles
-- Nearby Work Opportunities
-- Order Management
-- Ratings & Reviews
-- Earnings Overview
-- Recovery Support Interface
-- Multilingual-Friendly Design
+- ✅ Frontend UI — Dashboard, Orders, Earnings, Opportunities, Profile, all built and working
+- ✅ Saheli ki Salah page — UI built, currently shows **mock/sample responses** (not live AI yet)
+- ⏳ Backend (FastAPI) — in progress
+- ⏳ Claude API integration for live AI advisor & matching — planned next
+- ⏳ AI Demand Engine, Trust Passport, Crisis Recovery — designed, not yet implemented
 
----
-
-## Tech Stack
-
-### Frontend
-- Next.js
-- React.js
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- Lucide React
-
-### Design
-- Figma
+We'd rather tell you this upfront than have you click something mid-demo expecting it to be live.
 
 ---
 
-## Future Scope
+## 🧵 The Problem, Honestly
 
-- Backend integration using Firebase
-- Smart recommendations for women based on local demand
-- Location-based opportunity matching
-- Voice-based interaction
-- Multilingual support
-- Community verification system
+- Skilled women exist. Local demand for their skills exists. **The connection doesn't.**
+- Most gig/job platforms assume English literacy, smartphone fluency, and urban density. That excludes exactly the women who need this most.
+- Trust is the real currency in hyperlocal services — and no app has actually figured out how to build it without faking it with star ratings.
+- Women going through sudden financial hardship (loss of a earning family member, etc.) have *zero* structured way to quickly start earning again.
+
+We didn't want to build "another job board." We wanted to build the infrastructure that's actually missing.
 
 ---
 
-## Built For
+## ✨ What We Built
 
-**Build for Good – National Student Hackathon for Social Impact**
+| Feature | What it does |
+|---|---|
+| 🎙️ **Voice-first onboarding** | Register and list your skills by speaking, in your local language. No forms, no English requirement. |
+| 📋 **Community Need Board** | Locals post what they need — tailoring, tuition, cooking, childcare — in plain language. |
+| 🧠 **AI Demand Engine** | The actual brain of the project. It reads local requests and figures out *what's needed where*, instead of waiting for someone to search. |
+| 🎟️ **Trust Passport** | A profile built on verified work history and community endorsements — not gameable star ratings. |
+| 💬 **Saheli ki Salah** *(AI Advisor)* | Personalized business coaching — pricing tips, seasonal demand alerts, growth suggestions. UI is built; responses are currently mocked while the AI backend is wired up. |
+| 🚨 **Crisis Recovery Mode** | For women facing sudden financial hardship — generates an immediate, personalized roadmap to start earning fast. |
+| 📊 **Dashboard** | Earnings, orders, repeat clients, growth trends — all in one place. |
 
-*"Every skill deserves an opportunity."*
+---
+
+## 🛠️ Built With
+
+- **React + Vite** — fast, lightweight frontend
+- **Tailwind CSS** — for that clean, warm UI (we wanted it to feel human, not corporate)
+- **FastAPI** *(planned/in progress)* — backend for matching logic and APIs
+- **Claude API** *(planned/in progress)* — powering Saheli ki Salah's advisory responses
+
+> 🚧 Heads up: the AI advisor and backend matching are actively being built out. What you're seeing in this repo right now is the full frontend experience — Dashboard, Orders, Earnings, Opportunities, Profile, and the Salah page — wired up and ready for the AI layer to plug in.
+
+---
+
+## 📁 What's Inside
+
+```
+src/
+├── components/
+│   ├── LotusLogo.jsx
+│   └── Sidebar.jsx
+├── pages/
+│   ├── Dashboard.jsx
+│   ├── EarningsPage.jsx
+│   ├── OpportunitiesPage.jsx
+│   ├── OrdersPage.jsx
+│   ├── ProfilePage.jsx
+│   ├── SalahPage.jsx        ← Saheli ki Salah (AI advisor)
+│   └── Placeholders.jsx
+├── App.jsx
+├── main.jsx
+└── index.css
+```
+
+---
+
+## 🚀 Running It Locally
+
+```bash
+git clone https://github.com/pragya-pp08/Saheli-Network.git
+cd Saheli-Network
+npm install
+npm run dev
+```
+
+That's it. Should be live on `localhost:5173`.
+
+---
+
+## 💭 Why This, Why Now
+
+We didn't want to build a tool that *sounds* impactful in a pitch deck and then quietly assumes everyone using it has a smartphone, speaks English, and trusts strangers off an app. We wanted something that actually starts from where these women already are — their skills, their community, their language — and builds the missing pieces around that.
+
+This is a hackathon project, so it's not finished. But the bones are real, and we think the idea holds up.
+
+---
+
+## 🙋‍♀️ Built By
+
+**Pragya Richa Pandey** — [@pragya-pp08](https://github.com/pragya-pp08)
+
+If you're a judge, mentor, or just someone who stumbled on this repo — thank you for reading this far. Feedback's always welcome. 🌸
