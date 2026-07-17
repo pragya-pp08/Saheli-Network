@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #FAF7F2;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@layer components {
+  /* Typing dots animation for AI chat */
+  .dot-bounce {
+    animation: dotBounce 1.2s infinite;
+  }
+  .dot-bounce:nth-child(2) { animation-delay: 0.2s; }
+  .dot-bounce:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes dotBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30%            { transform: translateY(-6px); }
+  }
+}
