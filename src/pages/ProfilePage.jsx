@@ -1,11 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   MapPin, Phone, Globe, Home, Bike, Clock,
   Pencil, ChevronRight, Camera, Plus, LogOut, Star
 } from 'lucide-react'
 
-const skills = ['Tailoring', 'Mehndi', 'Cooking', 'Tuition', 'Stitching', 'Beautician']
-const activeSkills = ['Tailoring', 'Mehndi', 'Cooking']
+const defaultSkills = ['Tailoring', 'Mehndi', 'Cooking']
 
 const reviews = [
   { name: 'Priya S.',  rating: 5, text: 'Bahut accha kaam kiya. Mehndi ekdum sahi thi.', date: '2 din pehle' },
@@ -74,10 +73,44 @@ function Stars({ rating, size = 12 }) {
 }
 
 export default function ProfilePage() {
-  const [active, setActive] = useState(activeSkills)
+  const [active, setActive] = useState(defaultSkills)
+
+  const [profile, setProfile] = useState(null)
+
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch("http://localhost:8000/profile")
+      .then(res => res.json())
+      .then(data => {
+        setProfile(data)
+        setActive(data.skills || defaultSkills)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.log(err)
+        setLoading(false)
+      })
+  }, [])
 
   const toggle = (s) =>
     setActive(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-lg font-medium text-gray-500">
+        Loading Profile...
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center h-screen text-red-500">
+        Failed to load profile.
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-6 bg-[#FAF7F2]">
@@ -88,7 +121,7 @@ export default function ProfilePage() {
           <div className="flex items-start gap-4">
             <div className="relative flex-shrink-0">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-300 to-pink-500 flex items-center justify-center text-white text-2xl font-semibold">
-                S
+                {profile.name?.charAt(0)}
               </div>
               <button className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center border-2 border-white">
                 <Camera size={10} className="text-white" />
@@ -96,17 +129,17 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-[17px] font-bold text-gray-900">Shanti Devi</p>
+                <p className="text-[17px] font-bold text-gray-900">{profile.name}</p>
                 <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
                   Verified
                 </span>
               </div>
               <p className="text-[12px] text-gray-400 mt-1 flex items-center gap-1">
-                <MapPin size={10} /> Rampur, Madhya Pradesh
+                <MapPin size={10} /> {profile.location}
               </p>
               <div className="flex items-center gap-1.5 mt-1.5">
-                <Stars rating={5} />
-                <span className="text-[12px] text-gray-500">4.8 · 34 reviews</span>
+                <Stars rating={Math.round(profile.rating)} />
+                <span className="text-[12px] text-gray-500">{profile.rating} · {profile.reviews} reviews</span>
               </div>
             </div>
             <EditLink />
@@ -114,9 +147,9 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-gray-50">
             {[
-              { label: 'Kaam Kiye', value: '128' },
-              { label: 'Is Mahine', value: '₹12,450' },
-              { label: 'Rating',    value: '4.8/5' },
+              { label: 'Kaam Kiye', value: profile.jobs_completed },
+              { label: 'Is Mahine', value: `₹${profile.month_income}` },
+              { label: 'Rating',    value: `${profile.rating}/5` },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <p className="text-[15px] font-bold text-gray-900">{s.value}</p>
@@ -129,9 +162,9 @@ export default function ProfilePage() {
         {/* Profile Details */}
         <Card>
           <SectionHead title="Meri Jaankari" action={<EditLink />} />
-          <InfoRow Icon={Phone}  label="Phone Number"   value="+91 98765 43210" />
-          <InfoRow Icon={Globe}  label="Pasand ki Bhasha" value="Hindi" />
-          <InfoRow Icon={MapPin} label="Gaon / Jagah"   value="Rampur, Madhya Pradesh" />
+          <InfoRow Icon={Phone}  label="Phone Number"    value={profile.phone} />
+          <InfoRow Icon={Globe}  label="Pasand ki Bhasha" value={profile.language} />
+          <InfoRow Icon={MapPin} label="Gaon / Jagah"    value={profile.location} />
         </Card>
 
         {/* Skills */}
@@ -142,7 +175,7 @@ export default function ProfilePage() {
             </button>
           } />
           <div className="flex flex-wrap gap-2">
-            {skills.map(s => {
+            {(profile.skills || []).map(s => {
               const on = active.includes(s)
               return (
                 <button
@@ -165,16 +198,16 @@ export default function ProfilePage() {
         {/* Work Preferences */}
         <Card>
           <SectionHead title="Kaam ki Pasand" action={<EditLink />} />
-          <InfoRow Icon={Home}  label="Kaam Kahan"       value="Ghar se" />
-          <InfoRow Icon={Bike}  label="Kitni Door Jaana" value="5 km tak" />
-          <InfoRow Icon={Clock} label="Kab Available"    value="Subah 9 – Shaam 6" />
+          <InfoRow Icon={Home}  label="Kaam Kahan"       value={profile.work_type} />
+          <InfoRow Icon={Bike}  label="Kitni Door Jaana" value={profile.travel_distance} />
+          <InfoRow Icon={Clock} label="Kab Available"    value={profile.available_time} />
         </Card>
 
         {/* About Me */}
         <Card>
           <SectionHead title="Mere Baare Mein" action={<EditLink />} />
           <p className="text-[13px] text-gray-600 leading-relaxed">
-            Mujhe 8 saal ka anubhav hai silai aur mehndi mein. Maine apne gaon ki bahut saari shadiyon mein kaam kiya hai. Ghar par rehke kaam karti hoon aur quality ka poora dhyan rakhti hoon.
+            {profile.about}
           </p>
         </Card>
 
@@ -183,9 +216,11 @@ export default function ProfilePage() {
           <SectionHead title="Ratings aur Reviews" />
           <div className="flex items-center gap-5 pb-4 border-b border-gray-50 mb-4">
             <div className="text-center">
-              <p className="text-[38px] font-bold text-gray-900 leading-none">4.8</p>
-              <Stars rating={5} size={13} />
-              <p className="text-[11px] text-gray-400 mt-1">34 reviews</p>
+              <p className="text-[38px] font-bold text-gray-900 leading-none">
+                {profile.rating}
+              </p>
+              <Stars rating={Math.round(profile.rating)} size={13} />
+              <p className="text-[11px] text-gray-400 mt-1">{profile.reviews} reviews</p>
             </div>
             <div className="flex-1 flex flex-col gap-1.5">
               {[5,4,3,2,1].map(n => {
@@ -273,20 +308,27 @@ export default function ProfilePage() {
         <Card>
           <SectionHead title="Meri Kamai" />
           <div className="grid grid-cols-3 gap-2 mb-3">
-            {[
-              { m: 'April', v: '₹9,200',  curr: false },
-              { m: 'May',   v: '₹11,050', curr: false },
-              { m: 'June',  v: '₹12,450', curr: true  },
-            ].map(m => (
-              <div key={m.m} className={`rounded-xl p-3 text-center ${m.curr ? 'bg-[#E8F5ED] border border-green-100' : 'bg-[#FAF7F2]'}`}>
-                <p className="text-[13px] font-bold text-gray-800">{m.v}</p>
-                <p className="text-[11px] text-gray-400 mt-0.5">{m.m}</p>
+            {(profile.monthly_earnings || []).map((m) => (
+              <div
+                key={m.month}
+                className={`rounded-xl p-3 text-center ${
+                  m.current
+                    ? 'bg-[#E8F5ED] border border-green-100'
+                    : 'bg-[#FAF7F2]'
+                }`}
+              >
+                <p className="text-[13px] font-bold text-gray-800">
+                  ₹{m.amount}
+                </p>
+                <p className="text-[11px] text-gray-400 mt-0.5">
+                  {m.month}
+                </p>
               </div>
             ))}
           </div>
           <div className="bg-[#FAF7F2] rounded-xl px-4 py-3 flex justify-between items-center">
             <span className="text-[13px] text-gray-600">Is saal ki puri kamai</span>
-            <span className="text-[15px] font-bold text-gray-900">₹32,700</span>
+            <span className="text-[15px] font-bold text-gray-900">₹{profile.total_earnings || 0}</span>
           </div>
         </Card>
 

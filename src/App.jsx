@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/profile"       element={<ProfilePage />} />
           <Route path="/opportunities" element={<OpportunitiesPage />} />
           <Route path="/orders"        element={<OrdersPage />} />
+          
           <Route path="/earnings"      element={<EarningsPage />} />
           <Route path="/salah"         element={<SalahPage />} />
         </Routes>

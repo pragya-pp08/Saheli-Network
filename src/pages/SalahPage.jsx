@@ -62,7 +62,7 @@ export default function SalahPage() {
         .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }))
       history.push({ role: 'user', content: userText })
 
-      const res = await fetch('/api/chat', {
+      const res = await fetch('http://localhost:8000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: history, system: SYSTEM }),
