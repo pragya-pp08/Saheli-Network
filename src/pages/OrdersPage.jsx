@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { MapPin, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { MapPin, Clock, ChevronRight } from 'lucide-react'
 
 const tabs = ['Sab', 'Chal Raha', 'Ho Gaya', 'Pending']
 
@@ -22,6 +23,7 @@ const dotStyle = {
 }
 
 export default function OrdersPage() {
+  const navigate = useNavigate()
   const [tab, setTab] = useState('Sab')
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +39,7 @@ export default function OrdersPage() {
           id: order.id,
           title: order.service,
           client: order.customer,
-          dist: '-',
+          dist: '2 km',
           date: order.date,
           pay: order.amount,
           status:
@@ -85,8 +87,8 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 bg-[#FAF7F2]">
-      <div className="max-w-[650px] flex flex-col gap-4">
+    <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
+      <div className="max-w-5xl mx-auto flex flex-col gap-5">
 
         <div>
           <p className="text-[18px] font-bold text-gray-900">Mere Orders</p>
@@ -153,8 +155,8 @@ export default function OrdersPage() {
           {filtered.map(o => (
             <div
               key={o.id}
-              onClick={() => alert(o.title)}
-              className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex items-center gap-4"
+              onClick={() => navigate(`/orders/${o.id}`)}
+              className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               <div
                 className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotStyle[o.status]}`}
@@ -193,8 +195,19 @@ export default function OrdersPage() {
                   {statusMap[o.status]}
                 </span>
               </div>
+
+              <ChevronRight
+                size={18}
+                className="text-gray-300 ml-3"
+              />
             </div>
           ))}
+
+          {filtered.length === 0 && (
+            <div className="bg-white rounded-2xl p-8 text-center text-gray-500">
+              Koi order nahi mila.
+            </div>
+          )}
         </div>
 
       </div>

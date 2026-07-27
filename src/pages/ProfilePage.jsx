@@ -21,7 +21,9 @@ const orders = [
 
 function Card({ children, className = '' }) {
   return (
-    <div className={`bg-white rounded-2xl border border-gray-100 px-5 py-5 ${className}`}>
+    <div
+      className={`bg-white rounded-2xl border border-gray-100 px-5 py-5 hover:shadow-md transition-all duration-200 ${className}`}
+    >
       {children}
     </div>
   )
@@ -38,7 +40,10 @@ function SectionHead({ title, action }) {
 
 function EditLink() {
   return (
-    <button className="flex items-center gap-1 text-[12px] text-rose-500 font-medium">
+    <button
+      onClick={() => alert('Profile editing feature coming soon!')}
+      className="flex items-center gap-1 text-[12px] text-rose-500 font-medium"
+    >
       <Pencil size={11} /> Edit
     </button>
   )
@@ -113,8 +118,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 bg-[#FAF7F2]">
-      <div className="max-w-[600px] flex flex-col gap-4">
+    <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
+      <div className="max-w-5xl mx-auto flex flex-col gap-5">
 
         {/* Header */}
         <Card>
@@ -131,7 +136,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-[17px] font-bold text-gray-900">{profile.name}</p>
                 <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-                  Verified
+                  ✔ Verified Partner
                 </span>
               </div>
               <p className="text-[12px] text-gray-400 mt-1 flex items-center gap-1">
@@ -141,6 +146,9 @@ export default function ProfilePage() {
                 <Stars rating={Math.round(profile.rating)} />
                 <span className="text-[12px] text-gray-500">{profile.rating} · {profile.reviews} reviews</span>
               </div>
+              <p className="text-[12px] text-emerald-600 font-medium mt-1">
+                🌸 Trusted by 120+ families
+              </p>
             </div>
             <EditLink />
           </div>
@@ -170,7 +178,10 @@ export default function ProfilePage() {
         {/* Skills */}
         <Card>
           <SectionHead title="Meri Skills" action={
-            <button className="flex items-center gap-1 text-[12px] text-rose-500 font-medium">
+            <button
+              onClick={() => alert('This feature will be available soon!')}
+              className="flex items-center gap-1 text-[12px] text-rose-500 font-medium"
+            >
               <Plus size={11} /> Add
             </button>
           } />
@@ -258,7 +269,10 @@ export default function ProfilePage() {
         {/* Portfolio */}
         <Card>
           <SectionHead title="Mera Kaam (Photos)" action={
-            <button className="flex items-center gap-1 text-[12px] text-rose-500 font-medium">
+            <button
+              onClick={() => alert('This feature will be available soon!')}
+              className="flex items-center gap-1 text-[12px] text-rose-500 font-medium"
+            >
               <Plus size={11} /> Photo Add Karo
             </button>
           } />
@@ -268,8 +282,11 @@ export default function ProfilePage() {
               { label: 'Lehenga',       bg: 'bg-purple-100' },
               { label: 'Party Blouse',  bg: 'bg-amber-100' },
             ].map((p, i) => (
-              <div key={i} className={`${p.bg} rounded-xl aspect-square flex items-center justify-center relative overflow-hidden cursor-pointer`}>
-                <Camera size={18} className="text-gray-400" />
+              <div key={i} className={`${p.bg} rounded-xl aspect-square flex flex-col items-center justify-center gap-2 relative overflow-hidden cursor-pointer`}>
+                <Camera size={22} className="text-gray-500" />
+                <p className="text-[10px] font-medium text-gray-600">
+                  Image Coming Soon
+                </p>
                 <div className="absolute bottom-0 left-0 right-0 bg-black/15 px-1.5 py-1">
                   <p className="text-[9px] text-white font-medium">{p.label}</p>
                 </div>
@@ -340,7 +357,17 @@ export default function ProfilePage() {
             { Icon: Globe,  label: 'Bhasha Badlo',       sub: 'Hindi ya English',       bg: 'bg-purple-50', col: 'text-purple-400', danger: false },
             { Icon: LogOut, label: 'Logout',             sub: 'Account se bahar jao',   bg: 'bg-gray-50',   col: 'text-gray-400',   danger: true  },
           ].map(({ Icon, label, sub, bg, col, danger }) => (
-            <button key={label} className="flex items-center gap-3 w-full px-2 py-2.5 rounded-xl hover:bg-[#FAF7F2] transition-colors text-left">
+            <button
+              key={label}
+              onClick={() => {
+                if (label === 'Logout') {
+                  alert('Logged out successfully!')
+                } else {
+                  alert(`${label} feature coming soon!`)
+                }
+              }}
+              className="flex items-center gap-3 w-full px-2 py-2.5 rounded-xl hover:bg-[#FAF7F2] transition-colors text-left"
+            >
               <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
                 <Icon size={14} className={col} />
               </div>

@@ -1,22 +1,29 @@
 import React, { useState,useEffect} from 'react'
 import { MapPin, Clock, Filter } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const cats = ['Sab', 'Mehndi', 'Tailoring', 'Cooking', 'Tuition', 'Beautician']
 
 export default function OpportunitiesPage() {
   const [active, setActive] = useState('Sab')
   const [all, setAll] = useState([])
+  const navigate = useNavigate()
+
+const [selectedJob, setSelectedJob] = useState(null)
+
+const [appliedJobs, setAppliedJobs] = useState([])
   useEffect(() => {
     fetch("http://localhost:8000/opportunities")
       .then(res => res.json())
       .then(data => setAll(data))
+      .catch((err) => console.error(err));
   }, [])
 
   const filtered = active === 'Sab' ? all : all.filter(o => o.category === active)
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 bg-[#FAF7F2]">
-      <div className="max-w-[700px] flex flex-col gap-4">
+    <div className="flex-1 overflow-y-auto px-12 py-6 bg-[#FAF7F2]">
+      <div className="max-w-4xl mx-auto flex flex-col gap-5">
 
         <div className="flex items-center justify-between">
           <div>
@@ -46,7 +53,7 @@ export default function OpportunitiesPage() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-5">
           {filtered.map(o => (
             <div
               key={o.id}
@@ -74,13 +81,74 @@ export default function OpportunitiesPage() {
 
               <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
                 <p className="text-[14px] font-bold text-gray-900">{o.pay}</p>
-                <button className="text-[12px] font-medium text-white bg-rose-500 hover:bg-rose-600 px-3 py-1.5 rounded-lg transition-colors">
-                  Apply Karo
-                </button>
+                 <button
+  onClick={() => setSelectedJob(o)}
+  disabled={appliedJobs.includes(o.id)}
+  className={`text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors ${
+    appliedJobs.includes(o.id)
+      ? "bg-green-500 text-white cursor-default"
+      : "bg-rose-500 hover:bg-rose-600 text-white"
+  }`}
+>
+  {appliedJobs.includes(o.id) ? "✓ Applied" : "Apply Karo"}
+</button>
               </div>
             </div>
           ))}
         </div>
+        {selectedJob && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+    <div className="bg-white rounded-2xl p-6 w-[420px]">
+
+      <h2 className="text-xl font-bold mb-4">
+        Kaam ke liye Apply Karein
+      </h2>
+
+      <div className="space-y-2 text-sm">
+
+        <p><strong>Service:</strong> {selectedJob.title}</p>
+
+        <p><strong>Distance:</strong> {selectedJob.dist}</p>
+
+        <p><strong>Payment:</strong> {selectedJob.pay}</p>
+
+        <p><strong>Time:</strong> {selectedJob.time}</p>
+
+        <p><strong>Availability:</strong> {selectedJob.available_time}</p>
+
+      </div>
+
+      <div className="flex justify-end gap-3 mt-6">
+
+        <button
+          onClick={() => setSelectedJob(null)}
+          className="border px-4 py-2 rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+             alert("Application submitted successfully!")
+            setAppliedJobs([...appliedJobs, selectedJob.id])
+            setSelectedJob(null)
+
+            setTimeout(() => {
+              navigate("/orders")
+            }, 1000)
+          }}
+          className="bg-rose-500 text-white px-5 py-2 rounded-lg"
+        >
+          Apply Now
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
 
       </div>
     </div>

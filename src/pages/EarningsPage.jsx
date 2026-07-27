@@ -34,8 +34,8 @@ export default function EarningsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        Loading Earnings...
+      <div className="flex items-center justify-center h-screen text-gray-500">
+        Loading your earnings...
       </div>
     )
   }
@@ -50,10 +50,12 @@ export default function EarningsPage() {
 
   const total = monthly.reduce((sum, item) => sum + item.v, 0)
   const maxVal = Math.max(...monthly.map(item => item.v))
+  const goal = earnings.goal || 15000
+  const goalPct = Math.min((earnings.month / goal) * 100, 100)
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 bg-[#FAF7F2]">
-      <div className="max-w-[650px] flex flex-col gap-4">
+    <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
+      <div className="max-w-5xl mx-auto flex flex-col gap-5">
 
         <div>
           <p className="text-[18px] font-bold text-gray-900">Meri Kamai</p>
@@ -79,32 +81,61 @@ export default function EarningsPage() {
             </p>
           </div>
 
-          <div className="mt-3 pt-3 border-t border-green-200 flex justify-between">
+          <div className="mt-5 pt-4 border-t border-green-200 grid grid-cols-4 gap-4 text-center">
             <div>
-              <p className="text-[11px] text-green-700">Aaj ki Kamai</p>
-              <p className="text-[16px] font-bold text-green-900">
+              <p className="text-[11px] text-green-700">Aaj</p>
+              <p className="font-bold text-green-900">
                 ₹{earnings.today.toLocaleString('en-IN')}
               </p>
             </div>
 
             <div>
               <p className="text-[11px] text-green-700">Is Hafte</p>
-              <p className="text-[16px] font-bold text-green-900">
+              <p className="font-bold text-green-900">
                 ₹{earnings.week.toLocaleString('en-IN')}
               </p>
             </div>
 
             <div>
+              <p className="text-[11px] text-green-700">Pending</p>
+              <p className="font-bold text-orange-600">
+                ₹{(earnings.pending || 0).toLocaleString('en-IN')}
+              </p>
+            </div>
+
+            <div>
               <p className="text-[11px] text-green-700">Is Saal</p>
-              <p className="text-[16px] font-bold text-green-900">
+              <p className="font-bold text-green-900">
                 ₹{total.toLocaleString('en-IN')}
               </p>
             </div>
           </div>
         </div>
 
+        {/* Monthly Goal Progress */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-all duration-200">
+          <div className="flex justify-between mb-3">
+            <p className="font-semibold">
+              Monthly Goal
+            </p>
+
+            <p className="text-sm text-gray-500">
+              ₹{earnings.month.toLocaleString('en-IN')} / ₹{goal.toLocaleString('en-IN')}
+            </p>
+          </div>
+
+          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="bg-green-500 h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${goalPct}%`
+              }}
+            />
+          </div>
+        </div>
+
         {/* Bar Chart */}
-        <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5">
+        <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5 hover:shadow-md transition-all duration-200">
           <p className="text-[14px] font-semibold text-gray-800 mb-4">
             Mahine ke hisaab se
           </p>
@@ -141,7 +172,7 @@ export default function EarningsPage() {
         </div>
 
         {/* Recent Earnings */}
-        <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5">
+        <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5 hover:shadow-md transition-all duration-200">
           <p className="text-[14px] font-semibold text-gray-800 mb-3">
             Haal ke Kaam
           </p>
@@ -160,6 +191,10 @@ export default function EarningsPage() {
                   {item.title}
                 </p>
 
+                <p className="text-[11px] text-gray-500">
+                  {item.customer}
+                </p>
+
                 <p className="text-[11px] text-gray-400">
                   {item.date}
                 </p>
@@ -171,6 +206,14 @@ export default function EarningsPage() {
             </div>
           ))}
         </div>
+
+        {/* Withdraw Earnings */}
+        <button
+          onClick={() => alert('Withdrawal request submitted successfully!')}
+          className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-xl transition"
+        >
+          Withdraw Earnings
+        </button>
 
         {/* Tips */}
         <div className="bg-[#F0E6FF] border border-purple-100 rounded-2xl px-5 py-4">

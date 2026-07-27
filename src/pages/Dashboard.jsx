@@ -38,11 +38,11 @@ function WelcomeCard({ dashboard }) {
           <VerifiedBadge />
 
           <h1 className="text-[26px] font-bold text-gray-900 mt-2 leading-tight">
-            Namaste, {dashboard?.name || "Loading..."}!
+            🌸 Namaste, {dashboard?.name || "Loading..."} 
           </h1>
 
           <p className="text-[13px] text-gray-500 mt-1">
-            You have 3 New Opportunities Today
+            You have {dashboard?.new_opportunities } New Opportunities Today
           </p>
         </div>
       </div>
@@ -92,7 +92,7 @@ function EarningsCard({ dashboard }) {
 
         <div className="h-[5px] bg-green-200 rounded-full overflow-hidden">
           <div
-            className="h-full bg-green-600 rounded-full"
+            className="h-full bg-green-600 rounded-full transition-all duration-700"
             style={{
               width: `${dashboard?.weekly_progress || 0}%`,
             }}
@@ -105,7 +105,7 @@ function EarningsCard({ dashboard }) {
 
 /* ---------------- Salah Card ---------------- */
 
-function SalahCard({ onOpen }) {
+function SalahCard({ dashboard, onOpen }) {
   return (
     <div
       onClick={onOpen}
@@ -119,7 +119,7 @@ function SalahCard({ onOpen }) {
       </div>
 
       <p className="text-[13px] text-purple-800 leading-relaxed">
-        Wedding season aa raha hai. Mehndi ki demand badhne wali hai.
+        {dashboard?.salah || "Wedding season aa raha hai. Mehndi ki demand badhne wali hai."}
       </p>
 
       <button className="mt-4 flex items-center gap-1 text-[13px] font-semibold text-purple-700">
@@ -163,12 +163,15 @@ const jobs = [
 
 /* ---------------- Job Card ---------------- */
 
-function JobCard({ job }) {
+function JobCard({ job, onClick, onUrgentClick }) {
   const Icon = job.icon;
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-shadow hover:shadow-sm cursor-pointer ${
+      onClick={onClick}
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer
+      hover:shadow-md hover:-translate-y-1 hover:bg-white
+      transition-all duration-200 ${
         job.urgent
           ? "bg-[#FFF8F0] border-l-[3px] border-l-amber-400 border-t-amber-100 border-r-amber-100 border-b-amber-100"
           : "bg-[#FAF7F2] border-gray-100"
@@ -190,7 +193,13 @@ function JobCard({ job }) {
       </div>
 
       {job.urgent && (
-        <span className="text-[11px] font-semibold bg-red-600 text-white px-2 py-1 rounded-lg">
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            onUrgentClick && onUrgentClick();
+          }}
+          className="text-[11px] font-semibold bg-red-600 text-white px-2 py-1 rounded-lg hover:bg-red-700 transition-colors"
+        >
           Recovery Support
         </span>
       )}
@@ -200,7 +209,7 @@ function JobCard({ job }) {
 
 /* ---------------- Today's Jobs ---------------- */
 
-function AajKeKaamCard({ navigate })  {
+function AajKeKaamCard({ navigate }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5">
       <div className="flex justify-between items-center mb-3">
@@ -208,28 +217,36 @@ function AajKeKaamCard({ navigate })  {
           Aaj ke Kaam
         </h2>
 
-        <button 
-  onClick={() => navigate("/opportunities")}
-  className="text-[12px] text-pink-500">
-  View All
-</button>
+        <button
+          onClick={() => navigate("/opportunities")}
+          className="text-[12px] text-pink-500"
+        >
+          View All
+        </button>
       </div>
 
       <div className="flex flex-col gap-2">
         {jobs.map((job) => (
-          <JobCard key={job.id} job={job} />
+          <JobCard
+            key={job.id}
+            job={job}
+            onClick={() => navigate("/opportunities")}
+            onUrgentClick={() => navigate("/salah")}
+          />
         ))}
       </div>
     </div>
   );
 }
-/* ── Main Dashboard ── */
+
 /* ---------------- Main Dashboard ---------------- */
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
   const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function loadDashboard() {
@@ -239,37 +256,46 @@ export default function Dashboard() {
         console.log("Dashboard Data:", data);
 
         setDashboard(data);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching dashboard:", error);
+        setError(true);
+        setLoading(false);
       }
     }
 
     loadDashboard();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-gray-500 text-[14px]">
+        Loading Dashboard...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500 text-[14px]">
+        Unable to load dashboard.
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 p-6 flex flex-col gap-5 max-w-4xl">
-
+    <div className="flex-1 px-10 py-8 flex flex-col gap-6 max-w-5xl mx-auto">
       {/* Row 1 */}
-
       <div className="grid grid-cols-[1fr_220px] gap-4">
-
         <WelcomeCard dashboard={dashboard} />
-
         <EarningsCard dashboard={dashboard} />
-
       </div>
 
       {/* Row 2 */}
-
       <div className="grid grid-cols-[1fr_1.4fr] gap-4">
-
-        <SalahCard onOpen={() => navigate("/salah")} />
-
+        <SalahCard dashboard={dashboard} onOpen={() => navigate("/salah")} />
         <AajKeKaamCard navigate={navigate} />
-
       </div>
-
     </div>
   );
 }
