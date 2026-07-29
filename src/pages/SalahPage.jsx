@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { motion } from "framer-motion";
+import SaheliBot from "../components/SaheliBot";
 import { Send, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import LotusLogo from '../components/LotusLogo'
+import FloatingPetals from "../components/FloatingPetals";
 
 const INITIAL = {
   role: 'ai',
@@ -78,33 +81,78 @@ export default function SalahPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-[#FAF7F2]" style={{ height: '100vh' }}>
+    <div className="relative flex-1 flex flex-col bg-[#FAF7F2] overflow-hidden" style={{ height: '100vh' }}>
+  <FloatingPetals />
 
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-3.5 bg-white border-b border-gray-100 flex-shrink-0">
-        <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 transition-colors">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => navigate('/')}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+        >
           <ArrowLeft size={17} />
-        </button>
-        <div className="w-8 h-8 rounded-full bg-[#F0E6FF] flex items-center justify-center flex-shrink-0">
+        </motion.button>
+        <motion.div
+          animate={{
+            rotate: [0, -8, 8, -8, 0]
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 5
+          }}
+          className="w-8 h-8 rounded-full bg-[#F0E6FF] flex items-center justify-center flex-shrink-0"
+        >
           <LotusLogo size={16} />
-        </div>
+        </motion.div>
         <div>
           <p className="text-[14px] font-semibold text-gray-900">Saheli ki Salah</p>
           <p className="text-[11px] text-purple-500">Aapki apni advisor</p>
         </div>
       </div>
 
+      {/* Intro / live assistant — only before the first message */}
+      {messages.length === 1 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="py-8 flex flex-col items-center"
+        >
+          <SaheliBot />
+
+          <motion.h2
+            animate={{
+              opacity: [0.6, 1, 0.6]
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 2
+            }}
+            className="mt-5 text-2xl font-bold text-gray-800"
+          >
+            Namaste 🌸
+          </motion.h2>
+
+          <p className="mt-2 text-gray-500 text-sm">
+            Main hoon aapki Saheli
+          </p>
+        </motion.div>
+      )}
+
       {/* Quick prompts */}
       {quickVisible && (
         <div className="px-4 pt-3 pb-1 flex gap-2 flex-wrap flex-shrink-0">
           {QUICK.map(q => (
-            <button
+            <motion.button
               key={q}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => send(q)}
               className="text-[11px] px-3 py-1.5 rounded-full border border-purple-100 bg-white text-purple-600 hover:bg-purple-50 transition-colors"
             >
               {q}
-            </button>
+            </motion.button>
           ))}
         </div>
       )}
@@ -112,11 +160,28 @@ export default function SalahPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3">
         {messages.map((msg, i) => (
-          <div key={i} className={`flex gap-2 items-end ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className={`flex gap-2 items-end ${
+              msg.role === 'user' ? 'flex-row-reverse' : ''
+            }`}
+          >
             {msg.role === 'ai' && (
-              <div className="w-7 h-7 rounded-full bg-[#F0E6FF] flex items-center justify-center flex-shrink-0 mb-0.5">
+              <motion.div
+                animate={{
+                  y: [0, -3, 0],
+                }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 2,
+                }}
+                className="w-7 h-7 rounded-full bg-[#F0E6FF] flex items-center justify-center flex-shrink-0 mb-0.5"
+              >
                 <LotusLogo size={14} />
-              </div>
+              </motion.div>
             )}
             {msg.role === 'user' && (
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-300 to-pink-500 flex items-center justify-center flex-shrink-0 mb-0.5 text-white text-[12px] font-semibold">
@@ -132,14 +197,23 @@ export default function SalahPage() {
             >
               {msg.text}
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {loading && (
           <div className="flex gap-2 items-end">
-            <div className="w-7 h-7 rounded-full bg-[#F0E6FF] flex items-center justify-center flex-shrink-0">
+            <motion.div
+              animate={{
+                y: [0, -3, 0]
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 2
+              }}
+              className="w-7 h-7 rounded-full bg-[#F0E6FF] flex items-center justify-center flex-shrink-0"
+            >
               <LotusLogo size={14} />
-            </div>
+            </motion.div>
             <div className="bg-white border border-gray-100 px-4 py-3 rounded-2xl rounded-bl-sm flex gap-1 items-center">
               <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay:'0ms' }} />
               <span className="w-1.5 h-1.5 rounded-full bg-gray-300 animate-bounce" style={{ animationDelay:'150ms' }} />
@@ -166,13 +240,15 @@ export default function SalahPage() {
             e.target.style.height = Math.min(e.target.scrollHeight, 96) + 'px'
           }}
         />
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => send()}
           disabled={!input.trim() || loading}
           className="w-10 h-10 rounded-full bg-rose-500 hover:bg-rose-600 disabled:bg-gray-200 flex items-center justify-center transition-colors flex-shrink-0"
         >
           <Send size={15} className={input.trim() ? 'text-white' : 'text-gray-400'} />
-        </button>
+        </motion.button>
       </div>
     </div>
   )

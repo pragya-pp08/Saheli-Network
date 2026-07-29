@@ -1,4 +1,5 @@
-import React, { useState,useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -9,9 +10,9 @@ export default function OpportunitiesPage() {
   const [all, setAll] = useState([])
   const navigate = useNavigate()
 
-const [selectedJob, setSelectedJob] = useState(null)
+  const [selectedJob, setSelectedJob] = useState(null)
+  const [appliedJobs, setAppliedJobs] = useState([])
 
-const [appliedJobs, setAppliedJobs] = useState([])
   useEffect(() => {
     fetch("http://localhost:8000/opportunities")
       .then(res => res.json())
@@ -30,33 +31,40 @@ const [appliedJobs, setAppliedJobs] = useState([])
             <p className="text-[18px] font-bold text-gray-900">Kaam ke Mauke</p>
             <p className="text-[13px] text-gray-400 mt-0.5">Aaj {all.length} kaam available hain aapke aas-paas</p>
           </div>
-          <button className="flex items-center gap-1.5 text-[12px] text-gray-500 border border-gray-200 bg-white px-3 py-2 rounded-xl">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-1.5 text-[12px] text-gray-500 border border-gray-200 bg-white px-3 py-2 rounded-xl"
+          >
             <Filter size={13} /> Filter
-          </button>
+          </motion.button>
         </div>
 
         {/* Category tabs */}
         <div className="flex gap-2 flex-wrap">
           {cats.map(c => (
-            <button
+            <motion.button
               key={c}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setActive(c)}
-              className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${
+              className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${
                 active === c
                   ? 'bg-rose-500 border-rose-500 text-white'
                   : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
               }`}
             >
               {c}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         {/* Cards */}
         <div className="grid grid-cols-2 gap-5">
           {filtered.map(o => (
-            <div
+            <motion.div
               key={o.id}
+              whileHover={{ y: -5, scale: 1.02 }}
               className={`bg-white rounded-2xl border px-4 py-4 flex flex-col gap-3 ${
                 o.urgent ? 'border-l-[3px] border-l-amber-400 border-t-gray-100 border-r-gray-100 border-b-gray-100' : 'border-gray-100'
               }`}
@@ -81,74 +89,82 @@ const [appliedJobs, setAppliedJobs] = useState([])
 
               <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
                 <p className="text-[14px] font-bold text-gray-900">{o.pay}</p>
-                 <button
-  onClick={() => setSelectedJob(o)}
-  disabled={appliedJobs.includes(o.id)}
-  className={`text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors ${
-    appliedJobs.includes(o.id)
-      ? "bg-green-500 text-white cursor-default"
-      : "bg-rose-500 hover:bg-rose-600 text-white"
-  }`}
->
-  {appliedJobs.includes(o.id) ? "✓ Applied" : "Apply Karo"}
-</button>
+                <motion.button
+                  whileHover={{ scale: appliedJobs.includes(o.id) ? 1 : 1.05 }}
+                  whileTap={{ scale: appliedJobs.includes(o.id) ? 1 : 0.95 }}
+                  onClick={() => setSelectedJob(o)}
+                  disabled={appliedJobs.includes(o.id)}
+                  className={`text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                    appliedJobs.includes(o.id)
+                      ? "bg-green-500 text-white cursor-default"
+                      : "bg-rose-500 hover:bg-rose-600 text-white"
+                  }`}
+                >
+                  {appliedJobs.includes(o.id) ? "✓ Applied" : "Apply Karo"}
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-        {selectedJob && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-    <div className="bg-white rounded-2xl p-6 w-[420px]">
+        <AnimatePresence>
+          {selectedJob && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ duration: 0.25 }}
+                className="bg-white rounded-2xl p-6 w-[420px]"
+              >
+                <h2 className="text-xl font-bold mb-4">
+                  Kaam ke liye Apply Karein
+                </h2>
 
-      <h2 className="text-xl font-bold mb-4">
-        Kaam ke liye Apply Karein
-      </h2>
+                <div className="space-y-2 text-sm">
+                  <p><strong>Service:</strong> {selectedJob.title}</p>
+                  <p><strong>Distance:</strong> {selectedJob.dist}</p>
+                  <p><strong>Payment:</strong> {selectedJob.pay}</p>
+                  <p><strong>Time:</strong> {selectedJob.time}</p>
+                  <p><strong>Availability:</strong> {selectedJob.available_time}</p>
+                </div>
 
-      <div className="space-y-2 text-sm">
+                <div className="flex justify-end gap-3 mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedJob(null)}
+                    className="border px-4 py-2 rounded-lg"
+                  >
+                    Cancel
+                  </motion.button>
 
-        <p><strong>Service:</strong> {selectedJob.title}</p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      alert("Application submitted successfully!")
+                      setAppliedJobs([...appliedJobs, selectedJob.id])
+                      setSelectedJob(null)
 
-        <p><strong>Distance:</strong> {selectedJob.dist}</p>
-
-        <p><strong>Payment:</strong> {selectedJob.pay}</p>
-
-        <p><strong>Time:</strong> {selectedJob.time}</p>
-
-        <p><strong>Availability:</strong> {selectedJob.available_time}</p>
-
-      </div>
-
-      <div className="flex justify-end gap-3 mt-6">
-
-        <button
-          onClick={() => setSelectedJob(null)}
-          className="border px-4 py-2 rounded-lg"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={() => {
-             alert("Application submitted successfully!")
-            setAppliedJobs([...appliedJobs, selectedJob.id])
-            setSelectedJob(null)
-
-            setTimeout(() => {
-              navigate("/orders")
-            }, 1000)
-          }}
-          className="bg-rose-500 text-white px-5 py-2 rounded-lg"
-        >
-          Apply Now
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-)}
+                      setTimeout(() => {
+                        navigate("/orders")
+                      }, 1000)
+                    }}
+                    className="bg-rose-500 text-white px-5 py-2 rounded-lg"
+                  >
+                    Apply Now
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>

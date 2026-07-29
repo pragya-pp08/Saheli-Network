@@ -13,7 +13,12 @@ client = genai.Client(
 )
 
 app = FastAPI()
-
+recovery_status = {
+    "active": False,
+    "reason": "",
+    "description": "",
+    "skill": ""
+}
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -124,8 +129,10 @@ async def chat(request: ChatRequest):
         print("Gemini Error:", e)
         return {
             "reply": str(e)
-  
+
         }
+
+
 @app.get("/orders")
 def get_orders():
     return [
@@ -154,6 +161,8 @@ def get_orders():
             "amount": "₹600"
         }
     ]
+
+
 @app.get("/orders/{order_id}")
 def get_order(order_id: int):
     return {
@@ -168,6 +177,8 @@ def get_order(order_id: int):
         "status": "Upcoming",
         "description": "Bridal mehndi for wedding ceremony."
     }
+
+
 @app.get("/earnings")
 def get_earnings():
     return {
@@ -200,6 +211,8 @@ def get_earnings():
             }
         ]
     }
+
+
 @app.get("/profile")
 def get_profile():
     return {
@@ -239,3 +252,33 @@ def get_profile():
         ],
         "total_earnings": 32700
     }
+
+
+class RecoveryRequest(BaseModel):
+    reason: str
+    description: str
+    skill: str
+
+
+@app.post("/recovery-support")
+def recovery_support(data: RecoveryRequest):
+    global recovery_status
+
+    recovery_status = {
+        "active": True,
+        "reason": data.reason,
+        "description": data.description,
+        "skill": data.skill
+    }
+
+    print(recovery_status)
+
+    return {
+        "success": True,
+        "message": "Application received"
+    }
+
+
+@app.get("/recovery-status")
+def recovery_status_api():
+    return recovery_status

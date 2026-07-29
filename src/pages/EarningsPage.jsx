@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
+import { motion } from "framer-motion";
 import { TrendingUp } from 'lucide-react'
+import AnimatedNumber from '../components/AnimatedNumber'
 
 const monthly = [
   { m: 'January', v: 7200 },
@@ -65,13 +67,16 @@ export default function EarningsPage() {
         </div>
 
         {/* Hero */}
-        <div className="bg-[#E8F5ED] border border-green-100 rounded-2xl px-6 py-5">
+        <motion.div
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="bg-[#E8F5ED] border border-green-100 rounded-2xl px-6 py-5"
+        >
           <p className="text-[12px] font-medium text-green-700 uppercase tracking-wide mb-1">
             Is Mahine
           </p>
 
           <p className="text-[36px] font-bold text-green-900 leading-none">
-            ₹{earnings.month.toLocaleString('en-IN')}
+            ₹<AnimatedNumber value={earnings.month} />
           </p>
 
           <div className="flex items-center gap-1.5 mt-2">
@@ -85,35 +90,38 @@ export default function EarningsPage() {
             <div>
               <p className="text-[11px] text-green-700">Aaj</p>
               <p className="font-bold text-green-900">
-                ₹{earnings.today.toLocaleString('en-IN')}
+                ₹<AnimatedNumber value={earnings.today} />
               </p>
             </div>
 
             <div>
               <p className="text-[11px] text-green-700">Is Hafte</p>
               <p className="font-bold text-green-900">
-                ₹{earnings.week.toLocaleString('en-IN')}
+                ₹<AnimatedNumber value={earnings.week} />
               </p>
             </div>
 
             <div>
               <p className="text-[11px] text-green-700">Pending</p>
               <p className="font-bold text-orange-600">
-                ₹{(earnings.pending || 0).toLocaleString('en-IN')}
+                ₹<AnimatedNumber value={earnings.pending || 0} />
               </p>
             </div>
 
             <div>
               <p className="text-[11px] text-green-700">Is Saal</p>
               <p className="font-bold text-green-900">
-                ₹{total.toLocaleString('en-IN')}
+                ₹<AnimatedNumber value={total} />
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Monthly Goal Progress */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md transition-all duration-200">
+        <motion.div
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="bg-white rounded-2xl border border-gray-100 p-5"
+        >
           <div className="flex justify-between mb-3">
             <p className="font-semibold">
               Monthly Goal
@@ -125,23 +133,26 @@ export default function EarningsPage() {
           </div>
 
           <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="bg-green-500 h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${goalPct}%`
-              }}
+            <motion.div
+              className="bg-green-500 h-full rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${goalPct}%` }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Bar Chart */}
-        <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5 hover:shadow-md transition-all duration-200">
+        <motion.div
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="bg-white rounded-2xl border border-gray-100 px-5 py-5"
+        >
           <p className="text-[14px] font-semibold text-gray-800 mb-4">
             Mahine ke hisaab se
           </p>
 
           <div className="flex items-end gap-2 h-32">
-            {monthly.map(item => {
+            {monthly.map((item, i) => {
               const pct = (item.v / maxVal) * 100
 
               return (
@@ -154,11 +165,13 @@ export default function EarningsPage() {
                   </p>
 
                   <div className="w-full flex items-end" style={{ height: '80px' }}>
-                    <div
+                    <motion.div
                       className={`w-full rounded-t-lg ${
                         item.curr ? 'bg-rose-400' : 'bg-rose-100'
                       }`}
-                      style={{ height: `${pct}%` }}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${pct}%` }}
+                      transition={{ duration: 0.6, delay: i * 0.08, ease: "easeOut" }}
                     />
                   </div>
 
@@ -169,10 +182,13 @@ export default function EarningsPage() {
               )
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* Recent Earnings */}
-        <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5 hover:shadow-md transition-all duration-200">
+        <motion.div
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="bg-white rounded-2xl border border-gray-100 px-5 py-5"
+        >
           <p className="text-[14px] font-semibold text-gray-800 mb-3">
             Haal ke Kaam
           </p>
@@ -205,18 +221,23 @@ export default function EarningsPage() {
               </p>
             </div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Withdraw Earnings */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => alert('Withdrawal request submitted successfully!')}
           className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-xl transition"
         >
           Withdraw Earnings
-        </button>
+        </motion.button>
 
         {/* Tips */}
-        <div className="bg-[#F0E6FF] border border-purple-100 rounded-2xl px-5 py-4">
+        <motion.div
+          whileHover={{ y: -3, scale: 1.01 }}
+          className="bg-[#F0E6FF] border border-purple-100 rounded-2xl px-5 py-4"
+        >
           <p className="text-[13px] font-semibold text-purple-800 mb-1">
             Kamai badhane ka tarika
           </p>
@@ -226,7 +247,7 @@ export default function EarningsPage() {
             hai. Profile mein naye photos add karne se aur achhi ratings se
             zyada clients mil sakte hain.
           </p>
-        </div>
+        </motion.div>
 
       </div>
     </div>

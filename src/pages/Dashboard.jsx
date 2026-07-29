@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { getDashboard } from "../services/dashboardService";
+import { getRecoveryStatus } from "../services/recoveryService";
+import FloatingPetals from "../components/FloatingPetals";
+import AnimatedNumber from "../components/AnimatedNumber";
 
 import {
   BadgeCheck,
@@ -24,11 +28,25 @@ function VerifiedBadge() {
   );
 }
 
+/* ---------------- Time-based greeting ---------------- */
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return { emoji: "🌅", text: "Good Morning" };
+  if (hour < 17) return { emoji: "☀️", text: "Good Afternoon" };
+  return { emoji: "🌙", text: "Good Evening" };
+}
+
 /* ---------------- Welcome Card ---------------- */
 
 function WelcomeCard({ dashboard }) {
+  const { emoji, text } = getGreeting();
+
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 px-6 py-5 flex flex-col justify-between">
+    <motion.div
+      whileHover={{ y: -5, scale: 1.02 }}
+      className="bg-white rounded-2xl border border-gray-100 px-6 py-5 flex flex-col justify-between"
+    >
       <div className="relative">
         <div className="absolute right-0 top-0 opacity-[0.06] pointer-events-none select-none text-[80px] leading-none">
           🪷
@@ -38,11 +56,11 @@ function WelcomeCard({ dashboard }) {
           <VerifiedBadge />
 
           <h1 className="text-[26px] font-bold text-gray-900 mt-2 leading-tight">
-            🌸 Namaste, {dashboard?.name || "Loading..."} 
+            {emoji} {text}, {dashboard?.name || "Loading..."}
           </h1>
 
           <p className="text-[13px] text-gray-500 mt-1">
-            You have {dashboard?.new_opportunities } New Opportunities Today
+            You have {dashboard?.new_opportunities} New Opportunities Today
           </p>
         </div>
       </div>
@@ -53,9 +71,7 @@ function WelcomeCard({ dashboard }) {
 
           {dashboard?.rating || 0}/5
 
-          <span className="text-pink-400 font-normal">
-            Community Love
-          </span>
+          <span className="text-pink-400 font-normal">Community Love</span>
         </span>
 
         <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-full">
@@ -64,7 +80,7 @@ function WelcomeCard({ dashboard }) {
           {dashboard?.jobs_completed || 0} Jobs Completed
         </span>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -72,13 +88,16 @@ function WelcomeCard({ dashboard }) {
 
 function EarningsCard({ dashboard }) {
   return (
-    <div className="bg-[#E8F5ED] rounded-2xl border border-green-100 px-5 py-5">
+    <motion.div
+      whileHover={{ y: -5, scale: 1.02 }}
+      className="bg-[#E8F5ED] rounded-2xl border border-green-100 px-5 py-5"
+    >
       <p className="text-[11px] font-semibold text-green-800 uppercase tracking-wide mb-1">
         Today's Earnings
       </p>
 
       <p className="text-[34px] font-bold text-green-900 leading-none">
-        ₹{dashboard?.today_earnings || 0}
+        ₹<AnimatedNumber value={dashboard?.today_earnings || 0} />
       </p>
 
       <div className="mt-4">
@@ -86,20 +105,20 @@ function EarningsCard({ dashboard }) {
           <span>This Week</span>
 
           <span className="font-semibold text-green-900">
-            ₹{dashboard?.week_earnings || 0}
+            ₹<AnimatedNumber value={dashboard?.week_earnings || 0} />
           </span>
         </div>
 
         <div className="h-[5px] bg-green-200 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-green-600 rounded-full transition-all duration-700"
-            style={{
-              width: `${dashboard?.weekly_progress || 0}%`,
-            }}
+          <motion.div
+            className="h-full bg-green-600 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${dashboard?.weekly_progress || 0}%` }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
           />
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -107,9 +126,10 @@ function EarningsCard({ dashboard }) {
 
 function SalahCard({ dashboard, onOpen }) {
   return (
-    <div
+    <motion.div
+      whileHover={{ y: -5, scale: 1.02 }}
       onClick={onOpen}
-      className="bg-[#F0E6FF] border border-purple-100 rounded-2xl px-5 py-5 cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-[#F0E6FF] border border-purple-100 rounded-2xl px-5 py-5 cursor-pointer"
     >
       <div className="flex items-center gap-2 mb-3">
         <Sparkles size={14} className="text-purple-600" />
@@ -119,13 +139,18 @@ function SalahCard({ dashboard, onOpen }) {
       </div>
 
       <p className="text-[13px] text-purple-800 leading-relaxed">
-        {dashboard?.salah || "Wedding season aa raha hai. Mehndi ki demand badhne wali hai."}
+        {dashboard?.salah ||
+          "Wedding season aa raha hai. Mehndi ki demand badhne wali hai."}
       </p>
 
-      <button className="mt-4 flex items-center gap-1 text-[13px] font-semibold text-purple-700">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="mt-4 flex items-center gap-1 text-[13px] font-semibold text-purple-700"
+      >
         Get Ready <ArrowRight size={14} />
-      </button>
-    </div>
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -162,48 +187,25 @@ const jobs = [
 ];
 
 /* ---------------- Job Card ---------------- */
-
-function JobCard({ job, onClick, onUrgentClick }) {
-  const Icon = job.icon;
-
+function JobCard({ job, onUrgentClick }) {
   return (
-    <div
-      onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer
-      hover:shadow-md hover:-translate-y-1 hover:bg-white
-      transition-all duration-200 ${
-        job.urgent
-          ? "bg-[#FFF8F0] border-l-[3px] border-l-amber-400 border-t-amber-100 border-r-amber-100 border-b-amber-100"
-          : "bg-[#FAF7F2] border-gray-100"
-      }`}
+    <motion.div
+      whileHover={{ y: -3, scale: 1.01 }}
+      className="border p-4 rounded-lg mb-3"
     >
-      <div
-        className={`w-8 h-8 rounded-lg ${job.iconBg} flex items-center justify-center`}
-      >
-        <Icon size={16} className={job.iconColor} />
-      </div>
-
-      <div className="flex-1">
-        <p className="text-[13px] font-medium text-gray-800">{job.name}</p>
-
-        <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
-          <MapPin size={10} />
-          {job.meta}
-        </p>
-      </div>
+      <p>{job.name}</p>
 
       {job.urgent && (
-        <span
-          onClick={(e) => {
-            e.stopPropagation();
-            onUrgentClick && onUrgentClick();
-          }}
-          className="text-[11px] font-semibold bg-red-600 text-white px-2 py-1 rounded-lg hover:bg-red-700 transition-colors"
+        <motion.button
+          onClick={onUrgentClick}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="bg-red-500 text-white px-4 py-2 rounded mt-2"
         >
           Recovery Support
-        </span>
+        </motion.button>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -211,7 +213,10 @@ function JobCard({ job, onClick, onUrgentClick }) {
 
 function AajKeKaamCard({ navigate }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 px-5 py-5">
+    <motion.div
+      whileHover={{ y: -5, scale: 1.01 }}
+      className="bg-white rounded-2xl border border-gray-100 px-5 py-5"
+    >
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-[14px] font-semibold text-gray-800">
           Aaj ke Kaam
@@ -231,11 +236,11 @@ function AajKeKaamCard({ navigate }) {
             key={job.id}
             job={job}
             onClick={() => navigate("/opportunities")}
-            onUrgentClick={() => navigate("/salah")}
+            onUrgentClick={() => navigate("/recovery-support")}
           />
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -247,14 +252,15 @@ export default function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [recovery, setRecovery] = useState({ active: false });
 
   useEffect(() => {
     async function loadDashboard() {
       try {
         const data = await getDashboard();
+        const recoveryData = await getRecoveryStatus();
 
-        console.log("Dashboard Data:", data);
-
+        setRecovery(recoveryData);
         setDashboard(data);
         setLoading(false);
       } catch (error) {
@@ -284,17 +290,43 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex-1 px-10 py-8 flex flex-col gap-6 max-w-5xl mx-auto">
-      {/* Row 1 */}
-      <div className="grid grid-cols-[1fr_220px] gap-4">
-        <WelcomeCard dashboard={dashboard} />
-        <EarningsCard dashboard={dashboard} />
-      </div>
+    <div className="relative flex-1 px-10 py-8 flex flex-col gap-6 max-w-5xl mx-auto overflow-hidden">
+      <FloatingPetals />
 
-      {/* Row 2 */}
-      <div className="grid grid-cols-[1fr_1.4fr] gap-4">
-        <SalahCard dashboard={dashboard} onOpen={() => navigate("/salah")} />
-        <AajKeKaamCard navigate={navigate} />
+      <div className="relative z-10 flex flex-col gap-6">
+        {/* Row 1 */}
+        <div className="grid grid-cols-[1fr_220px] gap-4">
+          <WelcomeCard dashboard={dashboard} />
+          <EarningsCard dashboard={dashboard} />
+        </div>
+
+        {/* Row 2 */}
+        {recovery.active && (
+          <motion.div
+            animate={{ scale: [1, 1.02, 1] }}
+            transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 2 }}
+            className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-between"
+          >
+            <div>
+              <h2 className="font-semibold text-red-700">
+                ❤️ Recovery Support Active
+              </h2>
+
+              <p className="text-sm text-red-600 mt-1">
+                Your profile is temporarily prioritized for urgent work.
+              </p>
+            </div>
+
+            <span className="bg-red-600 text-white px-4 py-2 rounded-full text-sm">
+              Active
+            </span>
+          </motion.div>
+        )}
+
+        <div className="grid grid-cols-[1fr_1.4fr] gap-4">
+          <SalahCard dashboard={dashboard} onOpen={() => navigate("/salah")} />
+          <AajKeKaamCard navigate={navigate} />
+        </div>
       </div>
     </div>
   );
