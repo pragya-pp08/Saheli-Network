@@ -23,8 +23,8 @@ export default function OpportunitiesPage() {
   const filtered = active === 'Sab' ? all : all.filter(o => o.category === active)
 
   return (
-    <div className="flex-1 overflow-y-auto px-12 py-6 bg-[#FAF7F2]">
-      <div className="max-w-4xl mx-auto flex flex-col gap-5">
+    <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
+      <div className="max-w-5xl mx-auto flex flex-col gap-5">
 
         <div className="flex items-center justify-between">
           <div>

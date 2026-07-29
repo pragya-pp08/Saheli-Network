@@ -21,12 +21,12 @@ function PageTransition({ children }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
+      className="flex-1 flex flex-col w-full overflow-hidden"
     >
       {children}
     </motion.div>
   );
 }
-
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
