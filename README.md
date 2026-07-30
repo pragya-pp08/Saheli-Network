@@ -1,110 +1,154 @@
 # 🌸 Saheli Network
 
-### *Every woman's skill, found by her community.*
+**Empowering skilled women with nearby work opportunities, AI-powered guidance, and support when it matters most.**
+
+Built for [Build for Good](https://www.samasocial.in/hackathon/build-for-good) — Sama Social's hackathon for socially impactful tech.
 
 ---
 
-Okay so here's the thing. There are millions of women across small towns and villages in India who can stitch a blouse perfectly, who give the best mehndi in the mohalla, who've been cooking for functions for 15 years — and almost none of them have a way to turn that into a steady income. Not because the demand isn't there. It is. Someone three streets away is *right now* looking for a tailor. They just have no way of finding each other.
+## The Idea
 
-That's the gap we're trying to close.
+There's a woman who works at my home — hardworking, skilled at cooking and tailoring, well-liked by everyone she works for. But every new job she gets comes from word of mouth. There's no way for her to show what she can do beyond who happens to know her, and if something goes wrong — a medical emergency, a bad month — there's no safety net and no easy way to signal "I need work, urgently" to anyone who might have it.
 
-Saheli Network is a hyperlocal platform that connects skilled women to real, local work — and uses AI to do the matchmaking, the trust-building, and even the business advice that usually only comes from years of experience (or a really good chacha in the business).
+That's the gap Saheli Network tries to close. It's a platform for skilled women in the informal sector — tailoring, mehndi, cooking, childcare, and more — to find nearby work, track what they've earned, get practical AI-backed advice for their specific situation, and ask for temporary priority when they're in a crisis.
 
----
+## The Problem
 
-## 📍 Current Status (Being Upfront)
+Women working informally in small towns and rural areas often face:
 
-- ✅ Frontend UI — Dashboard, Orders, Earnings, Opportunities, Profile, all built and working
-- ✅ Saheli ki Salah page — UI built, currently shows **mock/sample responses** (not live AI yet)
-- ⏳ Backend (FastAPI) — in progress
-- ⏳ Claude API integration for live AI advisor & matching — planned next
-- ⏳ AI Demand Engine, Trust Passport, Crisis Recovery — designed, not yet implemented
+- Work that depends entirely on word of mouth, with no way to reach people beyond their immediate circle
+- No visibility into what's nearby, what pays well, or what's urgent
+- No support system when a financial or family emergency hits
+- No one giving them practical, personalized advice about their own work
 
-We'd rather tell you this upfront than have you click something mid-demo expecting it to be live.
+## What Saheli Network Does
 
----
-
-## 🧵 The Problem, Honestly
-
-- Skilled women exist. Local demand for their skills exists. **The connection doesn't.**
-- Most gig/job platforms assume English literacy, smartphone fluency, and urban density. That excludes exactly the women who need this most.
-- Trust is the real currency in hyperlocal services — and no app has actually figured out how to build it without faking it with star ratings.
-- Women going through sudden financial hardship (loss of a earning family member, etc.) have *zero* structured way to quickly start earning again.
-
-We didn't want to build "another job board." We wanted to build the infrastructure that's actually missing.
+- **Finds nearby work** — filtered by skill, distance, and urgency, so she's not relying on chance
+- **Tracks earnings** — daily, weekly, monthly, with a clear view of progress toward a goal
+- **Gives real advice** — an AI assistant (Saheli ki Salah) that responds in her own language and ties suggestions to her actual skills, ratings, and the season
+- **Offers Recovery Support** — a way to flag a genuine emergency and get temporarily prioritized for urgent nearby work
+- **Builds trust** — verified profiles, ratings, and a track record that travels with her instead of resetting with every new client
 
 ---
 
-## ✨ What We Built
+## Screenshots
 
-| Feature | What it does |
-|---|---|
-| 🎙️ **Voice-first onboarding** | Register and list your skills by speaking, in your local language. No forms, no English requirement. |
-| 📋 **Community Need Board** | Locals post what they need — tailoring, tuition, cooking, childcare — in plain language. |
-| 🧠 **AI Demand Engine** | The actual brain of the project. It reads local requests and figures out *what's needed where*, instead of waiting for someone to search. |
-| 🎟️ **Trust Passport** | A profile built on verified work history and community endorsements — not gameable star ratings. |
-| 💬 **Saheli ki Salah** *(AI Advisor)* | Personalized business coaching — pricing tips, seasonal demand alerts, growth suggestions. UI is built; responses are currently mocked while the AI backend is wired up. |
-| 🚨 **Crisis Recovery Mode** | For women facing sudden financial hardship — generates an immediate, personalized roadmap to start earning fast. |
-| 📊 **Dashboard** | Earnings, orders, repeat clients, growth trends — all in one place. |
+**Dashboard** — daily opportunities, earnings at a glance, and AI suggestions in one place
+![Dashboard](./screenshots/dashboard.png)
 
----
+**Saheli ki Salah** — the AI advisor, responding in the same language she writes in
+![Saheli ki Salah](./screenshots/saheli-ki-salah.png)
 
-## 🛠️ Built With
-
-- **React + Vite** — fast, lightweight frontend
-- **Tailwind CSS** — for that clean, warm UI (we wanted it to feel human, not corporate)
-- **FastAPI** *(planned/in progress)* — backend for matching logic and APIs
-- **Claude API** *(planned/in progress)* — powering Saheli ki Salah's advisory responses
-
-> 🚧 Heads up: the AI advisor and backend matching are actively being built out. What you're seeing in this repo right now is the full frontend experience — Dashboard, Orders, Earnings, Opportunities, Profile, and the Salah page — wired up and ready for the AI layer to plug in.
+**Recovery Support** — a simple form to flag an emergency and get prioritized for urgent work
+![Recovery Support](./screenshots/recovery-support.png)
 
 ---
 
-## 📁 What's Inside
+## Features
+
+**Profile** — skills, ratings, completed jobs, monthly earnings, and work preferences in one place.
+
+**Dashboard** — a personalized welcome (with a time-based greeting), today's earnings, weekly progress, an AI tip for the day, and a live Recovery Support banner when it's active.
+
+**Opportunities** — nearby jobs filtered by category, with distance, timing, pay, and urgency clearly flagged.
+
+**Orders** — everything in progress, completed, or pending, with customer and service details.
+
+**Earnings** — today, this week, this month, a monthly goal tracker, and full history.
+
+**Saheli ki Salah** — an AI assistant powered by Google's Gemini API. It replies in whatever language she writes in (Hindi, English, or Hinglish) and ties every suggestion to her real situation — her skills, her nearby jobs, the season.
+
+**Recovery Support** — when something goes wrong, she can describe the emergency and get temporarily prioritized for urgent nearby work, no long forms or approval delays.
+
+**Design** — an animated splash screen, smooth page transitions, soft pastel visuals, and a floating-petal motif throughout, aimed at feeling warm and trustworthy rather than transactional.
+
+---
+
+## Tech Stack
+
+**Frontend:** React, Vite, Tailwind CSS, React Router, Framer Motion, Lucide React
+
+**Backend:** FastAPI (Python)
+
+**AI:** Google Gemini API
+
+**Planned:** Firebase Authentication and Firestore, for real accounts and persistent data beyond this demo
+
+---
+
+## Project Structure
 
 ```
-src/
-├── components/
-│   ├── LotusLogo.jsx
-│   └── Sidebar.jsx
-├── pages/
-│   ├── Dashboard.jsx
-│   ├── EarningsPage.jsx
-│   ├── OpportunitiesPage.jsx
-│   ├── OrdersPage.jsx
-│   ├── ProfilePage.jsx
-│   ├── SalahPage.jsx        ← Saheli ki Salah (AI advisor)
-│   └── Placeholders.jsx
-├── App.jsx
-├── main.jsx
-└── index.css
+Saheli-Network
+├── src
+│   ├── components
+│   ├── pages
+│   └── services
+├── backend
+│   ├── main.py
+│   ├── requirements.txt
+│   └── .env
+├── public
+└── package.json
 ```
 
 ---
 
-## 🚀 Running It Locally
+## Running It Locally
 
+You'll need two terminals running at the same time — one for the frontend, one for the backend.
+
+**Clone the repo**
 ```bash
-git clone https://github.com/pragya-pp08/Saheli-Network.git
+git clone https://github.com/your-username/Saheli-Network.git
 cd Saheli-Network
+```
+
+**Terminal 1 — Frontend**
+```bash
 npm install
 npm run dev
 ```
+Runs at `http://localhost:5173`
 
-That's it. Should be live on `localhost:5173`.
+**Terminal 2 — Backend**
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+Create a `.env` file inside `backend/`:
+```env
+GEMINI_API_KEY=YOUR_API_KEY
+```
+
+Then start the server:
+```bash
+python -m uvicorn main:app --reload
+```
+Runs at `http://localhost:8000`
 
 ---
 
-## 💭 Why This, Why Now
+## Demo Login
 
-We didn't want to build a tool that *sounds* impactful in a pitch deck and then quietly assumes everyone using it has a smartphone, speaks English, and trusts strangers off an app. We wanted something that actually starts from where these women already are — their skills, their community, their language — and builds the missing pieces around that.
+Phone number: `9876543210`
 
-This is a hackathon project, so it's not finished. But the bones are real, and we think the idea holds up.
+Press **Continue** — no OTP or verification needed for this demo.
 
 ---
 
-## 🙋‍♀️ Built By
+## What's Next
 
-**Pragya Richa Pandey** — [@pragya-pp08](https://github.com/pragya-pp08)
+- **Firebase Authentication + real accounts** — this demo uses a single hardcoded profile; real accounts are the natural next step before this could go live
+- **Location-based matching** — right now "distance" is illustrative; real matching would use actual location data to surface genuinely nearby work
+- **Regional language support beyond Hindi/English** — many of the women this is built for are more comfortable in other regional languages, and the AI advisor should meet them there too
+- **A digital wallet or direct payment flow** — so earnings tracked in-app can actually be collected through it, not just recorded
 
-If you're a judge, mentor, or just someone who stumbled on this repo — thank you for reading this far. Feedback's always welcome. 🌸
+---
+
+## Built By
+
+**Pragya Richa Pandey** — B.Tech Computer Science Engineering, solo build for Build for Good.
+
+Made with care, for women who've been doing this work all along and deserve a better way to find it.
