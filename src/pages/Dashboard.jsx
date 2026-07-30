@@ -32,9 +32,9 @@ function VerifiedBadge() {
 
 function getGreeting() {
   const hour = new Date().getHours();
-  if (hour < 12) return { emoji: "🌅", text: "Good Morning" };
-  if (hour < 17) return { emoji: "☀️", text: "Good Afternoon" };
-  return { emoji: "🌙", text: "Good Evening" };
+  if (hour < 12) return { text: "Good Morning" };
+  if (hour < 17) return {  text: "Good Afternoon" };
+  return {  text: "Good Evening" };
 }
 
 /* ---------------- Welcome Card ---------------- */
