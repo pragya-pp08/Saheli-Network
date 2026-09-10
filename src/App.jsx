@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./pages/Dashboard";
 import ProfilePage from "./pages/ProfilePage";
@@ -11,9 +14,12 @@ import EarningsPage from "./pages/EarningsPage";
 import SalahPage from "./pages/SalahPage";
 import OrderDetailsPage from "./pages/OrderDetails";
 import RecoverySupportPage from "./pages/RecoverySupportPage";
+import CustomerDashboard from "./pages/CustomerDashboard";
+import CustomerJobsPage from "./pages/CustomerJobsPage";
 import LoginPage from "./pages/LoginPage";
 import SplashScreen from "./components/SplashScreen";
 import FloatingPetals from "./components/FloatingPetals";
+import { api } from "./services/api";
 
 function PageTransition({ children }) {
   return (
@@ -30,6 +36,26 @@ function PageTransition({ children }) {
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [accountId, setAccountId] = useState(null);
+  const [accountMode, setAccountMode] = useState(null);
+  useEffect(() => onAuthStateChanged(auth, async user => {
+    setIsLoggedIn(!!user);
+    setAccountId(user?.uid || null);
+    if (!user) {
+      setAccountMode(null);
+      setAuthLoading(false);
+      return;
+    }
+    try {
+      const summary = await api('/account-summary');
+      setAccountMode(summary.accountMode || 'worker');
+    } catch {
+      setAccountMode('worker');
+    } finally {
+      setAuthLoading(false);
+    }
+  }), []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -37,6 +63,12 @@ export default function App() {
     }, 3200);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleModeChange = (event) => setAccountMode(event.detail?.mode || 'worker');
+    window.addEventListener('saheli-mode-changed', handleModeChange);
+    return () => window.removeEventListener('saheli-mode-changed', handleModeChange);
   }, []);
 
   return (
@@ -48,18 +80,17 @@ export default function App() {
         {showSplash && <SplashScreen key="splash" />}
       </AnimatePresence>
 
-      {!showSplash && (
+      {!showSplash && !authLoading && (
         <Routes>
           <Route
             path="/login"
             element={
-              isLoggedIn ? (
-                <Navigate to="/" replace />
-              ) : (
-                <PageTransition>
-                  <LoginPage onLogin={() => setIsLoggedIn(true)} />
+              <PageTransition>
+                  <LoginPage onLogin={(mode) => {
+                    setIsLoggedIn(true);
+                    if (mode) setAccountMode(mode);
+                  }} />
                 </PageTransition>
-              )
             }
           />
 
@@ -67,7 +98,7 @@ export default function App() {
             path="/*"
             element={
               isLoggedIn ? (
-                <div className="flex min-h-screen bg-[#FAF7F2]">
+                <div key={accountId} className="flex min-h-screen bg-[#FAF7F2]">
                   <Sidebar />
 
                   <main className="flex-1 flex overflow-hidden">
@@ -76,7 +107,7 @@ export default function App() {
                         path="/"
                         element={
                           <PageTransition>
-                            <Dashboard />
+                            {accountMode === 'customer' ? <CustomerDashboard /> : <Dashboard />}
                           </PageTransition>
                         }
                       />
@@ -88,14 +119,12 @@ export default function App() {
                           </PageTransition>
                         }
                       />
-                      <Route
-                        path="/opportunities"
-                        element={
-                          <PageTransition>
-                            <OpportunitiesPage />
-                          </PageTransition>
-                        }
-                      />
+                      {accountMode === 'worker' && (
+                        <Route path="/opportunities" element={<PageTransition><OpportunitiesPage /></PageTransition>} />
+                      )}
+                      {accountMode === 'customer' && (
+                        <Route path="/customer-jobs" element={<PageTransition><CustomerJobsPage /></PageTransition>} />
+                      )}
                       <Route
                         path="/orders"
                         element={
@@ -112,30 +141,12 @@ export default function App() {
                           </PageTransition>
                         }
                       />
-                      <Route
-                        path="/earnings"
-                        element={
-                          <PageTransition>
-                            <EarningsPage />
-                          </PageTransition>
-                        }
-                      />
-                      <Route
-                        path="/salah"
-                        element={
-                          <PageTransition>
-                            <SalahPage />
-                          </PageTransition>
-                        }
-                      />
-                      <Route
-                        path="/recovery-support"
-                        element={
-                          <PageTransition>
-                            <RecoverySupportPage />
-                          </PageTransition>
-                        }
-                      />
+                      {accountMode === 'worker' && <>
+                        <Route path="/earnings" element={<PageTransition><EarningsPage /></PageTransition>} />
+                        <Route path="/salah" element={<PageTransition><SalahPage /></PageTransition>} />
+                        <Route path="/recovery-support" element={<PageTransition><RecoverySupportPage /></PageTransition>} />
+                      </>}
+                      <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </main>
                 </div>

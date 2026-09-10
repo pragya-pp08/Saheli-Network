@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import LotusLogo from "./LotusLogo";
-import FloatingPetals from "./FloatingPetals";
 
 export default function SplashScreen() {
   return (
@@ -11,7 +10,7 @@ export default function SplashScreen() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
     >
-      <FloatingPetals />
+
 
       <div className="relative z-10 flex flex-col items-center">
         <motion.div

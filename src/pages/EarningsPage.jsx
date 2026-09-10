@@ -3,15 +3,7 @@ import { motion } from "framer-motion";
 import { TrendingUp } from 'lucide-react'
 import AnimatedNumber from '../components/AnimatedNumber'
 
-const monthly = [
-  { m: 'January', v: 7200 },
-  { m: 'February', v: 8100 },
-  { m: 'March', v: 9400 },
-  { m: 'April', v: 9200 },
-  { m: 'May', v: 11050 },
-  { m: 'June', v: 12450, curr: true },
-]
-
+import { api } from '../services/api'
 export default function EarningsPage() {
   const [earnings, setEarnings] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -20,12 +12,11 @@ export default function EarningsPage() {
   useEffect(() => {
     const fetchEarnings = async () => {
       try {
-        const response = await fetch('http://localhost:8000/earnings')
-        const data = await response.json()
+        const data = await api('/earnings')
         setEarnings(data)
       } catch (err) {
         console.error(err)
-        setError('Failed to load earnings.')
+        setError(err.message || 'Failed to load earnings.')
       } finally {
         setLoading(false)
       }
@@ -50,8 +41,9 @@ export default function EarningsPage() {
     )
   }
 
+  const monthly = earnings.monthly || [];
   const total = monthly.reduce((sum, item) => sum + item.v, 0)
-  const maxVal = Math.max(...monthly.map(item => item.v))
+  const maxVal = Math.max(1, ...monthly.map(item => item.v))
   const goal = earnings.goal || 15000
   const goalPct = Math.min((earnings.month / goal) * 100, 100)
 
@@ -193,6 +185,7 @@ export default function EarningsPage() {
             Haal ke Kaam
           </p>
 
+          {earnings.history.length === 0 && <p className="text-sm text-gray-400">Abhi koi confirmed payment nahi hai.</p>}
           {earnings.history.map(item => (
             <div
               key={item.id}
@@ -223,11 +216,11 @@ export default function EarningsPage() {
           ))}
         </motion.div>
 
-        {/* Withdraw Earnings */}
+        {/* Bank Payouts — Setup Pending */}
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => alert('Withdrawal request submitted successfully!')}
+          disabled title="Bank payouts need provider onboarding and are not enabled yet."
           className="w-full bg-rose-500 hover:bg-rose-600 text-white font-semibold py-3 rounded-xl transition"
         >
           Withdraw Earnings

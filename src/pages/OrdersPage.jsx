@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Clock, ChevronRight } from 'lucide-react'
 
+import { api } from '../services/api'
+
 const tabs = ['Sab', 'Chal Raha', 'Ho Gaya', 'Pending']
 
 const statusMap = {
@@ -32,14 +34,13 @@ export default function OrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch('http://localhost:8000/orders')
-        const data = await response.json()
+        const [data, applications] = await Promise.all([api('/orders'), api('/applications')])
 
         const formatted = data.map(order => ({
           id: order.id,
           title: order.service,
           client: order.customer,
-          dist: '2 km',
+          dist: order.address || 'Location not added',
           date: order.date,
           pay: order.amount,
           status:
@@ -50,9 +51,12 @@ export default function OrdersPage() {
               : 'pending',
         }))
 
-        setOrders(formatted)
+        setOrders([...formatted, ...applications.filter(a => a.status !== 'Accepted').map(a => ({
+          id: a.id, title: a.title + (a.status === 'Closed' ? ' · Application closed' : ' · Application'),
+          client: a.status === 'Closed' ? 'This job has been assigned' : 'Awaiting customer selection', dist: a.location, date: a.date, pay: a.pay, status:'pending', application:true
+        }))])
       } catch (err) {
-        setError('Failed to load orders.')
+        setError(err.message || 'Failed to load orders.')
         console.error(err)
       } finally {
         setLoading(false)
@@ -152,10 +156,11 @@ export default function OrdersPage() {
 
         {/* Orders */}
         <div className="flex flex-col gap-2.5">
+          {filtered.length === 0 && <p className="text-sm text-gray-400">Abhi is section mein koi order nahi hai.</p>}
           {filtered.map(o => (
             <div
               key={o.id}
-              onClick={() => navigate(`/orders/${o.id}`)}
+              onClick={() => navigate(o.application ? "/opportunities" : `/orders/${o.id}`)}
               className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex items-center gap-4 cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-200"
             >
               <div

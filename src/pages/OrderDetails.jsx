@@ -10,23 +10,30 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
+import { api, post } from "../services/api";
+import { payForOrder } from "../services/payment";
+import EditForm from "../components/EditForm";
+
 export default function OrderDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [order, setOrder] = useState(null);
   const [completed, setCompleted] = useState(false);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
 
-  useEffect(() => {
-    fetch(`http://localhost:8000/orders/${id}`)
-      .then((res) => res.json())
-      .then((data) => setOrder(data));
-  }, [id]);
+  async function load() {
+    const data = await api('/orders/' + id); setOrder(data); setCompleted(data.status === 'Completed');
+  }
+  useEffect(() => { setOrder(null); setError(''); load().catch(err => setError(err.message)); }, [id]);
+  async function action(fn) { setBusy(true); setError(''); try { await fn(); await load(); } catch (err) { setError(err.message); } finally { setBusy(false); } }
 
   if (!order) {
     return (
       <div className="flex-1 flex items-center justify-center text-gray-500">
-        Loading...
+        {error || "Loading..."}
       </div>
     );
   }
@@ -35,6 +42,8 @@ export default function OrderDetailsPage() {
     <div className="flex-1 p-8 bg-[#FAF7F2]">
 
       <div className="max-w-4xl mx-auto">
+        {error && <p role="alert" className="text-sm text-red-500 mb-3">{error}</p>}
+        {reviewing && <EditForm title="Review" initial={{rating:5,text:""}} fields={[{name:"rating",label:"Rating (1–5)",type:"number",min:1,max:5,required:true},{name:"text",label:"Review",required:true,maxLength:1000}]} onSave={v => post(`/orders/${id}/review`, {...v,rating:Number(v.rating)})} onClose={() => setReviewing(false)} />}
 
         {/* Back Button */}
 
@@ -136,6 +145,11 @@ export default function OrderDetailsPage() {
 
           </div>
 
+          <p className="mt-4 text-sm text-gray-500">Payment: {order.paymentStatus === 'paid' ? 'Confirmed · ' + order.paymentId : 'Not paid'}</p>
+          {order.isCustomer && completed && <div className="flex gap-3 mt-4">
+            {order.paymentStatus !== 'paid' && <button disabled={busy} onClick={() => action(() => payForOrder(id))} className="bg-rose-500 text-white px-5 py-2 rounded-xl">{busy ? 'Please wait...' : 'Pay Now'}</button>}
+            <button onClick={() => setReviewing(true)} className="border text-rose-500 px-5 py-2 rounded-xl">Add Review</button>
+          </div>}
           {/* Buttons */}
 
           <div className="grid grid-cols-3 gap-4 mt-10">
@@ -150,7 +164,7 @@ export default function OrderDetailsPage() {
             <button
               onClick={() =>
                 window.open(
-                  `https://www.google.com/maps/search/${order.address}`,
+                  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.address)}`,
                   "_blank"
                 )
               }
@@ -160,8 +174,8 @@ export default function OrderDetailsPage() {
             </button>
 
             <button
-              onClick={() => setCompleted(true)}
-              disabled={completed}
+              onClick={() => action(() => post(`/orders/${id}/complete`))}
+              disabled={completed || busy || order.isCustomer}
               className={`py-3 rounded-xl font-semibold transition ${
                 completed
                   ? "bg-green-600 text-white"

@@ -1,3 +1,11 @@
 node_modules
 dist
 .env
+.env.*
+!.env.example
+__pycache__/
+.pytest_cache/
+.venv/
+*service-account*.json
+firebase-debug.log
+saheli-network-b633f-37621ebfb921.json

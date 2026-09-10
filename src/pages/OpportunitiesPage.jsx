@@ -1,26 +1,30 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Filter } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+
+import { api, post } from '../services/api'
 
 const cats = ['Sab', 'Mehndi', 'Tailoring', 'Cooking', 'Tuition', 'Beautician']
 
 export default function OpportunitiesPage() {
   const [active, setActive] = useState('Sab')
   const [all, setAll] = useState([])
-  const navigate = useNavigate()
 
   const [selectedJob, setSelectedJob] = useState(null)
   const [appliedJobs, setAppliedJobs] = useState([])
 
-  useEffect(() => {
-    fetch("http://localhost:8000/opportunities")
-      .then(res => res.json())
-      .then(data => setAll(data))
-      .catch((err) => console.error(err));
-  }, [])
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [nearbyOnly, setNearbyOnly] = useState(false);
+  async function load() {
+    setError('');
+    try { const [jobs, applications] = await Promise.all([api('/opportunities'), api('/applications')]); setAll(jobs); setAppliedJobs(applications.map(a => a.jobId)); }
+    catch (err) { setError(err.message); } finally { setLoading(false); }
+  }
+  useEffect(() => { load(); }, []);
 
-  const filtered = active === 'Sab' ? all : all.filter(o => o.category === active)
+  const filtered = all.filter(o => (active === 'Sab' || o.category === active) && (!nearbyOnly || (o.distance !== null && o.distance <= 5)))
 
   return (
     <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
@@ -29,17 +33,25 @@ export default function OpportunitiesPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[18px] font-bold text-gray-900">Kaam ke Mauke</p>
-            <p className="text-[13px] text-gray-400 mt-0.5">Aaj {all.length} kaam available hain aapke aas-paas</p>
+            <p className="text-[13px] text-gray-400 mt-0.5">Aaj {all.length} kaam available hain</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => setNearbyOnly(!nearbyOnly)}
             className="flex items-center gap-1.5 text-[12px] text-gray-500 border border-gray-200 bg-white px-3 py-2 rounded-xl"
           >
-            <Filter size={13} /> Filter
+            <Filter size={13} /> {nearbyOnly ? "Within 5 km ✓" : "Within 5 km"}
           </motion.button>
         </div>
 
+        {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
+        {loading && <p className="text-sm text-gray-400">Loading opportunities...</p>}
+        {!loading && !error && !filtered.length && (
+          <p className="text-sm text-gray-400">
+            Abhi is category mein koi posted kaam available nahi hai. Naya customer job post karega to woh yahan automatically dikh jayega.
+          </p>
+        )}
         {/* Category tabs */}
         <div className="flex gap-2 flex-wrap">
           {cats.map(c => (
@@ -80,7 +92,7 @@ export default function OpportunitiesPage() {
 
               <div className="flex flex-col gap-1">
                 <p className="text-[11px] text-gray-400 flex items-center gap-1">
-                  <MapPin size={10} /> {o.dist} door
+                  <MapPin size={10} /> {o.dist}
                 </p>
                 <p className="text-[11px] text-gray-400 flex items-center gap-1">
                   <Clock size={10} /> {o.time}
@@ -147,14 +159,11 @@ export default function OpportunitiesPage() {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      alert("Application submitted successfully!")
-                      setAppliedJobs([...appliedJobs, selectedJob.id])
-                      setSelectedJob(null)
-
-                      setTimeout(() => {
-                        navigate("/orders")
-                      }, 1000)
+                    disabled={busy}
+                    onClick={async () => {
+                      setBusy(true); setError('');
+                      try { await post('/opportunities/' + selectedJob.id + '/apply'); setAppliedJobs(prev => [...prev, selectedJob.id]); setSelectedJob(null); }
+                      catch (err) { alert(err.message); } finally { setBusy(false); }
                     }}
                     className="bg-rose-500 text-white px-5 py-2 rounded-lg"
                   >

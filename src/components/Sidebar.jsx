@@ -1,5 +1,5 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   User,
@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import LotusLogo from "./LotusLogo";
 
+import { api } from "../services/api";
+import Notifications from "./Notifications";
+
 const navItems = [
   { to: "/profile", icon: User, label: "My Profile" },
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
@@ -24,6 +27,16 @@ const navItems = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [summary, setSummary] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    const load = () => api('/account-summary').then(data => { if (!cancelled) setSummary(data); }).catch(() => {});
+    load(); const timer = setInterval(load, 60000);
+    window.addEventListener('saheli-data-changed', load);
+    return () => { cancelled = true; clearInterval(timer); window.removeEventListener('saheli-data-changed', load); };
+  }, [pathname]);
 
   return (
     <aside className="w-52 min-w-[208px] flex flex-col bg-white border-r border-gray-100 min-h-screen">
@@ -35,7 +48,7 @@ export default function Sidebar() {
           </span>
         </div>
 
-        <motion.div
+        <motion.button aria-label="Notifications" onClick={() => setShowNotifications(true)}
           animate={{ rotate: [0, 15, -12, 8, -4, 0] }}
           transition={{
             duration: 0.6,
@@ -44,17 +57,18 @@ export default function Sidebar() {
             ease: "easeInOut",
           }}
         >
-          <Bell size={16} className="text-gray-400" />
-        </motion.div>
+          <Bell size={16} className={summary?.unread ? "text-rose-500" : "text-gray-400"} />
+        </motion.button>
+        {showNotifications && <Notifications onClose={() => setShowNotifications(false)} />}
       </div>
 
       <div className="flex flex-col items-start px-4 pt-4 pb-4 border-b border-gray-100">
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-300 to-pink-500 flex items-center justify-center text-white font-semibold text-lg mb-2 shadow-sm">
-          S
+          {summary?.name?.charAt(0)?.toUpperCase() || "S"}
         </div>
 
         <p className="text-[13px] font-semibold text-gray-800">
-          Welcome, Saheli
+          Welcome, {summary?.name || "Saheli"}
         </p>
 
         <p className="text-[11px] text-gray-400 mt-0.5">
@@ -69,7 +83,7 @@ export default function Sidebar() {
             to={to}
             end={to === "/"}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors duration-150 ${
+              `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[14px] transition-colors duration-150 ${
                 isActive
                   ? "bg-rose-50 text-rose-600 font-medium"
                   : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
@@ -89,12 +103,12 @@ export default function Sidebar() {
 
         <div className="flex justify-between text-[12px] text-gray-500">
           <span>Completed</span>
-          <span className="font-medium text-gray-700">12</span>
+          <span className="font-medium text-gray-700">{summary?.completed ?? 0}</span>
         </div>
 
         <div className="flex justify-between text-[12px] text-gray-500 mt-0.5">
           <span>Pending</span>
-          <span className="font-medium text-gray-700">2</span>
+          <span className="font-medium text-gray-700">{summary?.pending ?? 0}</span>
         </div>
       </div>
 
@@ -104,7 +118,7 @@ export default function Sidebar() {
           className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white text-[12px] font-medium py-2.5 rounded-xl transition-colors"
         >
           <ShieldCheck size={14} />
-          Recovery Support Active
+          {summary?.recovery ? "Recovery Support Active" : "Recovery Support"}
         </button>
       </div>
     </aside>

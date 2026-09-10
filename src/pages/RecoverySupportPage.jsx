@@ -2,41 +2,26 @@ import React, { useState } from "react";
 import { ArrowLeft, HeartHandshake, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { post } from "../services/api";
+
 export default function RecoverySupportPage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
     reason: "",
     description: "",
-    skill: "",
+    skill: "Mehndi",
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e) {
   e.preventDefault();
 
-  try {
-    const response = await fetch(
-      "http://localhost:8000/recovery-support",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      }
-    );
-
-    if (response.ok) {
-      setSubmitted(true);
-    } else {
-      alert("Submission failed");
-    }
-  } catch (err) {
-    console.log(err);
-    alert("Server Error");
-  }
+  setSaving(true);
+  try { await post("/recovery-support", form); setSubmitted(true); }
+  catch (err) { alert(err.message); } finally { setSaving(false); }
 }
   if (submitted) {
     return (
@@ -53,8 +38,7 @@ export default function RecoverySupportPage() {
 
           <p className="text-gray-500 mt-3 leading-relaxed">
             Thank you for trusting Saheli Network.
-            We will prioritize your profile and try
-            to find nearby work as soon as possible.
+            Your request has been saved to your account. Browse available work on the Opportunities page.
           </p>
 
           <button
@@ -104,8 +88,7 @@ export default function RecoverySupportPage() {
         </div>
 
         <div className="mt-6 bg-rose-50 rounded-2xl p-5 text-sm text-gray-700 leading-relaxed">
-          If you are facing a sudden crisis, Saheli Network can temporarily
-          prioritize your profile and recommend urgent nearby work opportunities.
+          If you are facing a sudden crisis, you can save your situation privately to your account and look for urgent work on the Opportunities page.
         </div>
 
         <form
@@ -183,10 +166,10 @@ export default function RecoverySupportPage() {
 
           </div>
 
-          <button
+          <button disabled={saving}
             className="w-full bg-rose-500 text-white rounded-xl py-3 hover:bg-rose-600"
           >
-            Submit Application
+            {saving ? "Saving..." : "Submit Application"}
           </button>
 
         </form>

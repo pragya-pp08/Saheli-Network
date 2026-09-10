@@ -4,6 +4,8 @@
 
 Built for [Build for Good](https://www.samasocial.in/hackathon/build-for-good) — Sama Social's hackathon for socially impactful tech.
 
+> **Connected-app update:** The existing design now uses authenticated FastAPI/Firestore records for profiles, jobs, orders, earnings and notifications. Backend credentials are required. Payment checkout is implemented but not live; worker payouts are not implemented. Start with [SETUP.md](./SETUP.md). The hackathon screenshots below show the earlier prototype.
+
 ---
 
 ## The Idea
@@ -72,7 +74,7 @@ Women working informally in small towns and rural areas often face:
 
 **AI:** Google Gemini API
 
-**Planned:** Firebase Authentication and Firestore, for real accounts and persistent data beyond this demo
+**Accounts and database:** Firebase Authentication and Firestore through an authenticated FastAPI API.
 
 ---
 
@@ -130,20 +132,9 @@ Runs at `http://localhost:8000`
 
 ---
 
-## Demo Login
+## Current setup and remaining work
 
-Phone number: `9876543210`
-
-Press **Continue** — no OTP or verification needed for this demo.
-
----
-
-## What's Next
-
-- **Firebase Authentication + real accounts** — this demo uses a single hardcoded profile; real accounts are the natural next step before this could go live
-- **Location-based matching** — right now "distance" is illustrative; real matching would use actual location data to surface genuinely nearby work
-- **Regional language support beyond Hindi/English** — many of the women this is built for are more comfortable in other regional languages, and the AI advisor should meet them there too
-- **A digital wallet or direct payment flow** — so earnings tracked in-app can actually be collected through it, not just recorded
+There is no shared demo login. Register with email/password and follow [SETUP.md](./SETUP.md) to configure Firebase Admin, test the two-account job journey, and set up universal UPI/QR checkout. Live payments, worker payouts and production verification are not enabled.
 
 ---
 
