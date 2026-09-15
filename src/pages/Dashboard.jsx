@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { api } from "../services/api";
 import AnimatedNumber from "../components/AnimatedNumber";
 import ModeSwitch from "../components/ModeSwitch";
+import { useLanguage } from "../i18n/LanguageContext";
 
 import {
   BadgeCheck,
@@ -18,28 +19,28 @@ import {
 
 /* ---------------- Verified Badge ---------------- */
 
-function VerifiedBadge() {
+function VerifiedBadge({ label }) {
   return (
     <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-700 bg-purple-50 border border-purple-100 px-2.5 py-0.5 rounded-full">
       <BadgeCheck size={12} />
-      VERIFIED PARTNER
+      {label}
     </span>
   );
 }
 
 /* ---------------- Time-based greeting ---------------- */
 
-function getGreeting() {
+function getGreeting(t) {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good Morning";
-  if (hour < 17) return "Good Afternoon";
-  return "Good Evening";
+  if (hour < 12) return t("morning");
+  if (hour < 17) return t("afternoon");
+  return t("evening");
 }
 
 /* ---------------- Welcome Card ---------------- */
 
-function WelcomeCard({ dashboard }) {
-  const greeting = getGreeting();
+function WelcomeCard({ dashboard, t }) {
+  const greeting = getGreeting(t);
 
   return (
     <motion.div
@@ -52,14 +53,14 @@ function WelcomeCard({ dashboard }) {
         </div>
 
         <div className="relative z-10">
-          <VerifiedBadge />
+          <VerifiedBadge label={t("verified")} />
 
           <h1 className="text-[26px] font-bold text-gray-900 mt-2 leading-tight">
             {greeting}, {dashboard?.name || "Loading..."}
           </h1>
 
           <p className="text-[13px] text-gray-500 mt-1">
-            You have {dashboard?.new_opportunities ?? 0} New Opportunities Today
+            {t("newOpportunities", { count: dashboard?.new_opportunities ?? 0 })}
           </p>
 
           <div className="mt-4 flex justify-start">
@@ -74,13 +75,13 @@ function WelcomeCard({ dashboard }) {
 
           {dashboard?.rating || 0}/5
 
-          <span className="text-pink-400 font-normal">Community Love</span>
+          <span className="text-pink-400 font-normal">{t("communityLove")}</span>
         </span>
 
         <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-full">
           <BadgeCheck size={12} />
 
-          {dashboard?.jobs_completed || 0} Jobs Completed
+          {t("jobsCompleted", { count: dashboard?.jobs_completed || 0 })}
         </span>
       </div>
     </motion.div>
@@ -89,14 +90,14 @@ function WelcomeCard({ dashboard }) {
 
 /* ---------------- Earnings Card ---------------- */
 
-function EarningsCard({ dashboard }) {
+function EarningsCard({ dashboard, t }) {
   return (
     <motion.div
       whileHover={{ y: -5, scale: 1.02 }}
       className="bg-[#E8F5ED] rounded-2xl border border-green-100 px-6 py-6 min-h-[178px]"
     >
       <p className="text-[11px] font-semibold text-green-800 uppercase tracking-wide mb-1">
-        Today's Earnings
+        {t("todayEarnings")}
       </p>
 
       <p className="text-[34px] font-bold text-green-900 leading-none">
@@ -105,7 +106,7 @@ function EarningsCard({ dashboard }) {
 
       <div className="mt-4">
         <div className="flex justify-between text-[12px] text-green-700 mb-1.5">
-          <span>This Week</span>
+          <span>{t("thisWeek")}</span>
 
           <span className="font-semibold text-green-900">
             ₹<AnimatedNumber value={dashboard?.week_earnings || 0} />
@@ -127,7 +128,7 @@ function EarningsCard({ dashboard }) {
 
 /* ---------------- Salah Card ---------------- */
 
-function SalahCard({ dashboard, onOpen }) {
+function SalahCard({ dashboard, onOpen, t }) {
   return (
     <motion.div
       whileHover={{ y: -5, scale: 1.02 }}
@@ -137,7 +138,7 @@ function SalahCard({ dashboard, onOpen }) {
       <div className="flex items-center gap-2 mb-3">
         <Sparkles size={14} className="text-purple-600" />
         <span className="text-[13px] font-semibold text-purple-700">
-          Saheli ki Salah
+          {t("advice")}
         </span>
       </div>
 
@@ -151,7 +152,7 @@ function SalahCard({ dashboard, onOpen }) {
         whileTap={{ scale: 0.95 }}
         className="mt-4 flex items-center gap-1 text-[13px] font-semibold text-purple-700"
       >
-        Get Ready <ArrowRight size={14} />
+        {t("getReady")} <ArrowRight size={14} />
       </motion.button>
     </motion.div>
   );
@@ -187,7 +188,7 @@ function JobCard({ job, onClick, onUrgentClick }) {
 
 /* ---------------- Today's Jobs ---------------- */
 
-function AajKeKaamCard({ navigate, jobs = [] }) {
+function AajKeKaamCard({ navigate, jobs = [], t }) {
   return (
     <motion.div
       whileHover={{ y: -5, scale: 1.01 }}
@@ -195,19 +196,19 @@ function AajKeKaamCard({ navigate, jobs = [] }) {
     >
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-[14px] font-semibold text-gray-800">
-          Aaj ke Kaam
+          {t("todaysWork")}
         </h2>
 
         <button
           onClick={() => navigate("/opportunities")}
           className="text-[12px] text-pink-500"
         >
-          View All
+          {t("viewAll")}
         </button>
       </div>
 
       <div className="flex flex-col gap-2">
-        {jobs.length === 0 && <p className="text-sm text-gray-400">Abhi koi naya kaam nahi hai.</p>}
+        {jobs.length === 0 && <p className="text-sm text-gray-400">{t("noWork")}</p>}
         {jobs.map((job) => (
           <JobCard
             key={job.id}
@@ -225,6 +226,7 @@ function AajKeKaamCard({ navigate, jobs = [] }) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -264,14 +266,14 @@ export default function Dashboard() {
       <div className="relative z-10 flex flex-col gap-6">
         {/* Row 1 */}
         <div className="grid grid-cols-[1fr_220px] gap-4">
-          <WelcomeCard dashboard={dashboard} />
-          <EarningsCard dashboard={dashboard} />
+          <WelcomeCard dashboard={dashboard} t={t} />
+          <EarningsCard dashboard={dashboard} t={t} />
         </div>
 
         {/* Row 2 */}
         <div className="grid grid-cols-[1fr_1.4fr] gap-4">
-          <SalahCard dashboard={dashboard} onOpen={() => navigate("/salah")} />
-          <AajKeKaamCard navigate={navigate} jobs={dashboard?.opportunities} />
+          <SalahCard dashboard={dashboard} onOpen={() => navigate("/salah")} t={t} />
+          <AajKeKaamCard navigate={navigate} jobs={dashboard?.opportunities} t={t} />
         </div>
       </div>
     </div>

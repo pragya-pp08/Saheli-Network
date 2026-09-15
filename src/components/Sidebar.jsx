@@ -15,18 +15,21 @@ import LotusLogo from "./LotusLogo";
 
 import { api } from "../services/api";
 import Notifications from "./Notifications";
+import LanguageSelector from "./LanguageSelector";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const navItems = [
-  { to: "/profile", icon: User, label: "My Profile" },
-  { to: "/", icon: LayoutDashboard, label: "Dashboard" },
-  { to: "/opportunities", icon: Briefcase, label: "Opportunities" },
-  { to: "/orders", icon: ClipboardList, label: "Orders" },
-  { to: "/earnings", icon: Coins, label: "Earnings" },
-  { to: "/salah", icon: MessageCircleHeart, label: "Saheli ki Salah" },
+  { to: "/profile", icon: User, labelKey: "profile" },
+  { to: "/", icon: LayoutDashboard, labelKey: "dashboard" },
+  { to: "/opportunities", icon: Briefcase, labelKey: "opportunities" },
+  { to: "/orders", icon: ClipboardList, labelKey: "orders" },
+  { to: "/earnings", icon: Coins, labelKey: "earnings" },
+  { to: "/salah", icon: MessageCircleHeart, labelKey: "advice" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ accountMode = "worker" }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { pathname } = useLocation();
   const [summary, setSummary] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -68,19 +71,20 @@ export default function Sidebar() {
         </div>
 
         <p className="text-[13px] font-semibold text-gray-800">
-          Welcome, {summary?.name || "Saheli"}
+          {t("welcome")}, {summary?.name || "Saheli"}
         </p>
 
         <p className="text-[11px] text-gray-400 mt-0.5">
-          Trusted Saheli · Active Member
+          {t("member")}
         </p>
+        <LanguageSelector className="mt-2" />
       </div>
 
       <nav className="flex flex-col gap-0.5 px-2 pt-2 flex-1">
-        {navItems.map(({ to, icon: Icon, label }) => (
+        {navItems.map(({ to, icon: Icon, labelKey }) => (
           <NavLink
             key={to}
-            to={to}
+            to={to === "/opportunities" && accountMode === "customer" ? "/customer-jobs" : to}
             end={to === "/"}
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[14px] transition-colors duration-150 ${
@@ -91,23 +95,23 @@ export default function Sidebar() {
             }
           >
             <Icon size={15} />
-            {label}
+            {t(labelKey)}
           </NavLink>
         ))}
       </nav>
 
       <div className="px-4 py-3 border-t border-gray-100">
         <p className="text-[11px] font-medium text-gray-500 mb-1.5">
-          Mere Orders
+          {t("myOrders")}
         </p>
 
         <div className="flex justify-between text-[12px] text-gray-500">
-          <span>Completed</span>
+          <span>{t("completed")}</span>
           <span className="font-medium text-gray-700">{summary?.completed ?? 0}</span>
         </div>
 
         <div className="flex justify-between text-[12px] text-gray-500 mt-0.5">
-          <span>Pending</span>
+          <span>{t("pending")}</span>
           <span className="font-medium text-gray-700">{summary?.pending ?? 0}</span>
         </div>
       </div>
@@ -118,7 +122,7 @@ export default function Sidebar() {
           className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white text-[12px] font-medium py-2.5 rounded-xl transition-colors"
         >
           <ShieldCheck size={14} />
-          {summary?.recovery ? "Recovery Support Active" : "Recovery Support"}
+          {summary?.recovery ? t("recoveryActive") : t("recovery")}
         </button>
       </div>
     </aside>

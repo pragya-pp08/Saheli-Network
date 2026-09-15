@@ -5,10 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { loginUser, registerUser } from "../services/auth";
 import { updateProfile } from "firebase/auth";
 import { post } from "../services/api";
+import LanguageSelector from "../components/LanguageSelector";
+import { useLanguage } from "../i18n/LanguageContext";
 
 
 export default function LoginPage({ onLogin }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -65,8 +68,10 @@ export default function LoginPage({ onLogin }) {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="bg-white rounded-3xl shadow-lg p-10 w-[420px]"
+        className="relative bg-white rounded-3xl shadow-lg p-10 w-[420px]"
       >
+
+        <LanguageSelector className="absolute right-5 top-5" />
 
         {/* Logo */}
         <div className="flex flex-col items-center">
@@ -78,7 +83,7 @@ export default function LoginPage({ onLogin }) {
           </h1>
 
           <p className="text-gray-500 mt-2 text-center">
-            Empowering skilled women with nearby work opportunities
+            {t("tagline")}
           </p>
 
         </div>
@@ -89,40 +94,40 @@ export default function LoginPage({ onLogin }) {
           {isRegister && (
             <>
               <label className="font-medium text-gray-700">
-                Name
+                {t("name")}
               </label>
 
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
+                placeholder={t("enterName")}
                 required
                 className="w-full border rounded-xl p-3 mt-2 mb-5 focus:outline-none focus:ring-2 focus:ring-rose-200"
               />
 
-              <p className="font-medium text-gray-700 mb-2">Aap kya karna chahti hain?</p>
+              <p className="font-medium text-gray-700 mb-2">{t("chooseRole")}</p>
               <div className="grid grid-cols-2 gap-2 mb-5">
                 <button
                   type="button"
                   onClick={() => setAccountMode("worker")}
                   className={`border rounded-xl p-3 text-sm transition ${accountMode === "worker" ? "bg-rose-50 border-rose-300 text-rose-600" : "border-gray-200 text-gray-500"}`}
                 >
-                  Mujhe kaam chahiye
+                  {t("needWork")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setAccountMode("customer")}
                   className={`border rounded-xl p-3 text-sm transition ${accountMode === "customer" ? "bg-rose-50 border-rose-300 text-rose-600" : "border-gray-200 text-gray-500"}`}
                 >
-                  Mujhe kaam karwana hai
+                  {t("hireWork")}
                 </button>
               </div>
             </>
           )}
 
           <label className="font-medium text-gray-700">
-            Email
+            {t("email")}
           </label>
 
           <input
@@ -135,7 +140,7 @@ export default function LoginPage({ onLogin }) {
           />
 
           <label className="font-medium text-gray-700 block mt-5">
-            Password
+            {t("password")}
           </label>
 
           <input
@@ -161,10 +166,10 @@ export default function LoginPage({ onLogin }) {
             className="w-full mt-7 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white py-3 rounded-xl transition"
           >
             {loading
-              ? "Please wait..."
+              ? t("pleaseWait")
               : isRegister
-              ? "Create Account"
-              : "Login"}
+              ? t("createAccount")
+              : t("login")}
           </button>
 
         </form>
@@ -173,8 +178,8 @@ export default function LoginPage({ onLogin }) {
         <p className="text-center text-sm text-gray-500 mt-5">
 
           {isRegister
-            ? "Already have an account?"
-            : "New to Saheli Network?"}
+            ? t("alreadyAccount")
+            : t("newHere")}
 
           <button
             onClick={() => {
@@ -183,7 +188,7 @@ export default function LoginPage({ onLogin }) {
             }}
             className="ml-1 text-rose-500 font-medium hover:underline"
           >
-            {isRegister ? "Login" : "Create Account"}
+            {isRegister ? t("login") : t("createAccount")}
           </button>
 
         </p>

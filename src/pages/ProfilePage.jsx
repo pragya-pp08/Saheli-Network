@@ -19,6 +19,7 @@ import { logoutUser } from "../services/auth";
 import { uploadPhoto } from "../services/photo";
 import EditForm from "../components/EditForm";
 import ModeSwitch from "../components/ModeSwitch";
+import { useLanguage } from "../i18n/LanguageContext";
 
 const defaultSkills = [];
 
@@ -85,6 +86,7 @@ function Stars({ rating, size = 12 }) {
 }
 
 export default function ProfilePage() {
+  const { t } = useLanguage();
   const [active, setActive] = useState(defaultSkills);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -109,11 +111,12 @@ export default function ProfilePage() {
   /* ---------------- SKILLS ---------------- */
 
   const fields = [
-    {name:'name',label:'Name',required:true,maxLength:100}, {name:'phone',label:'Phone',maxLength:25},
-    {name:'location',label:'Gaon / Jagah',maxLength:200}, {name:'language',label:'Bhasha',options:['Hindi','English','Hinglish']},
-    {name:'skillsText',label:'Skills (comma separated)',maxLength:500}, {name:'work_type',label:'Work preference',maxLength:100},
+    {name:'name',label:t('name'),required:true,maxLength:100}, {name:'phone',label:t('phone'),maxLength:25},
+    {name:'location',label:t('location'),maxLength:200}, {name:'language',label:t('preferredLanguage'),options:['Hindi','English','Hinglish']},
+    {name:'skillsText',label:t('mySkills'),maxLength:500}, {name:'work_type',label:t('workPreference'),maxLength:100},
     {name:'travel_distance',label:'Travel distance',maxLength:50}, {name:'available_time',label:'Available time',maxLength:100},
-    {name:'about',label:'About you'}, {name:'goal',label:'Monthly earning goal (₹)',type:'number',min:0,max:10000000}
+    {name:'about',label:'About you'}, {name:'goal',label:'Monthly earning goal (₹)',type:'number',min:0,max:10000000},
+    {name:'upi_id',label:'UPI ID for receiving payments',maxLength:120}
   ];
   async function persist(values) {
     const allowed = Object.fromEntries(fields.filter(f => f.name !== 'skillsText').map(f => [f.name, values[f.name] ?? '']));
@@ -154,7 +157,7 @@ export default function ProfilePage() {
     <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
       <div className="max-w-5xl mx-auto flex flex-col gap-5">
         {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
-        {editing && <EditForm title="Profile Edit Karo" fields={fields} initial={{...profile, skillsText:(profile.skills || []).join(", ")}} location onSave={persist} onClose={() => setEditing(false)} />}
+        {editing && <EditForm title={t('profileEdit')} fields={fields} initial={{...profile, skillsText:(profile.skills || []).join(", ")}} location onSave={persist} onClose={() => setEditing(false)} />}
 
         <input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" aria-label="Upload photo" onChange={async e => {
           const file = e.target.files?.[0]; e.target.value = ''; if (!file) return;
@@ -253,25 +256,25 @@ export default function ProfilePage() {
         <Card>
 
           <SectionHead
-            title="Meri Jaankari"
+            title={t('myInfo')}
             action={<EditLink onClick={() => setEditing(true)} />}
           />
 
           <InfoRow
             Icon={Phone}
-            label="Phone Number"
+            label={t('phone')}
             value={profile.phone}
           />
 
           <InfoRow
             Icon={Globe}
-            label="Pasand ki Bhasha"
+            label={t('preferredLanguage')}
             value={profile.language}
           />
 
           <InfoRow
             Icon={MapPin}
-            label="Gaon / Jagah"
+            label={t('location')}
             value={profile.location}
           />
 
@@ -282,13 +285,13 @@ export default function ProfilePage() {
         <Card>
 
           <SectionHead
-            title="Meri Skills"
+            title={t('mySkills')}
             action={
               <button
                 onClick={() => setEditing(true)}
                 className="flex items-center gap-1 text-[12px] text-rose-500 font-medium"
               >
-                <Plus size={11} /> Add
+                <Plus size={11} /> {t('add')}
               </button>
             }
           />
@@ -328,7 +331,7 @@ export default function ProfilePage() {
         <Card>
 
           <SectionHead
-            title="Kaam ki Pasand"
+            title={t('workPreference')}
             action={<EditLink onClick={() => setEditing(true)} />}
           />
 
@@ -357,7 +360,7 @@ export default function ProfilePage() {
         <Card>
 
           <SectionHead
-            title="Mere Baare Mein"
+            title={t('aboutMe')}
             action={<EditLink onClick={() => setEditing(true)} />}
           />
 
@@ -371,7 +374,7 @@ export default function ProfilePage() {
 
         <Card>
 
-          <SectionHead title="Ratings aur Reviews" />
+          <SectionHead title={t('ratingsReviews')} />
 
           <div className="flex items-center gap-5 pb-4 border-b border-gray-50 mb-4">
 
@@ -478,7 +481,7 @@ export default function ProfilePage() {
         <Card>
 
           <SectionHead
-            title="Mera Kaam (Photos)"
+            title={t('portfolio')}
             action={
               <button
                 disabled={saving} onClick={() => choosePhoto("portfolio")}
@@ -592,7 +595,7 @@ export default function ProfilePage() {
 
         <Card>
 
-          <SectionHead title="Meri Kamai" />
+          <SectionHead title={t('earningsTitle')} />
 
           <div className="grid grid-cols-3 gap-2 mb-3">
 
@@ -639,7 +642,7 @@ export default function ProfilePage() {
 
         <Card>
 
-          <SectionHead title="Settings" />
+          <SectionHead title={t('settings')} />
 
           {[
             {

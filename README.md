@@ -4,7 +4,7 @@
 
 Built for [Build for Good](https://www.samasocial.in/hackathon/build-for-good) — Sama Social's hackathon for socially impactful tech.
 
-> **Connected-app update:** The existing design now uses authenticated FastAPI/Firestore records for profiles, jobs, orders, earnings and notifications. Backend credentials are required. Payment checkout is implemented but not live; worker payouts are not implemented. Start with [SETUP.md](./SETUP.md). The hackathon screenshots below show the earlier prototype.
+> **Connected-app update:** The existing design now uses authenticated FastAPI/Firestore records for profiles, jobs, orders, earnings and notifications. It supports Hinglish, Hindi and English, plus direct UPI/QR or cash payment confirmation between customers and providers. Backend credentials are required. Start with [SETUP.md](./SETUP.md). The hackathon screenshots below show the earlier prototype.
 
 ---
 
@@ -61,6 +61,10 @@ Women working informally in small towns and rural areas often face:
 **Saheli ki Salah** — an AI assistant powered by Google's Gemini API. It replies in whatever language she writes in (Hindi, English, or Hinglish) and ties every suggestion to her real situation — her skills, her nearby jobs, the season.
 
 **Recovery Support** — when something goes wrong, she can describe the emergency and get temporarily prioritized for urgent nearby work, no long forms or approval delays.
+
+**Multilingual UI** — the main worker and customer journeys can be switched between simple Hinglish, Hindi and English without changing the layout.
+
+**Direct payments** — a provider saves her UPI ID, the customer receives a universal UPI intent and QR code after work is completed, and earnings update only after the provider confirms receipt. Cash confirmation follows the same two-sided record.
 
 **Design** — an animated splash screen, smooth page transitions, soft pastel visuals, and a floating-petal motif throughout, aimed at feeling warm and trustworthy rather than transactional.
 

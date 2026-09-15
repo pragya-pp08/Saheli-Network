@@ -3,14 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { MapPin, Clock, ChevronRight } from 'lucide-react'
 
 import { api } from '../services/api'
+import { useLanguage } from '../i18n/LanguageContext'
 
-const tabs = ['Sab', 'Chal Raha', 'Ho Gaya', 'Pending']
-
-const statusMap = {
-  ongoing: 'Chal Raha',
-  done: 'Ho Gaya',
-  pending: 'Pending',
-}
+const tabs = ['all', 'ongoing', 'done', 'pending']
 
 const statusStyle = {
   ongoing: 'bg-amber-50 text-amber-600',
@@ -26,7 +21,8 @@ const dotStyle = {
 
 export default function OrdersPage() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('Sab')
+  const { t } = useLanguage()
+  const [tab, setTab] = useState('all')
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -34,12 +30,14 @@ export default function OrdersPage() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const [data, applications] = await Promise.all([api('/orders'), api('/applications')])
+        const summary = await api('/account-summary')
+        const data = await api('/orders')
+        const applications = summary.accountMode === 'worker' ? await api('/applications') : []
 
         const formatted = data.map(order => ({
           id: order.id,
           title: order.service,
-          client: order.customer,
+          client: order.isCustomer ? (order.worker || 'Selected Saheli') : order.customer,
           dist: order.address || 'Location not added',
           date: order.date,
           pay: order.amount,
@@ -52,7 +50,7 @@ export default function OrdersPage() {
         }))
 
         setOrders([...formatted, ...applications.filter(a => a.status !== 'Accepted').map(a => ({
-          id: a.id, title: a.title + (a.status === 'Closed' ? ' · Application closed' : ' · Application'),
+          id: a.id, title: a.title + (a.status === 'Closed' ? ' · Application closed' : a.status === 'Withdrawn' ? ' · Withdrawn' : ' · Application'),
           client: a.status === 'Closed' ? 'This job has been assigned' : 'Awaiting customer selection', dist: a.location, date: a.date, pay: a.pay, status:'pending', application:true
         }))])
       } catch (err) {
@@ -67,10 +65,10 @@ export default function OrdersPage() {
   }, [])
 
   const filtered = orders.filter(o => {
-    if (tab === 'Sab') return true
-    if (tab === 'Chal Raha') return o.status === 'ongoing'
-    if (tab === 'Ho Gaya') return o.status === 'done'
-    if (tab === 'Pending') return o.status === 'pending'
+    if (tab === 'all') return true
+    if (tab === 'ongoing') return o.status === 'ongoing'
+    if (tab === 'done') return o.status === 'done'
+    if (tab === 'pending') return o.status === 'pending'
     return true
   })
 
@@ -95,9 +93,9 @@ export default function OrdersPage() {
       <div className="max-w-5xl mx-auto flex flex-col gap-5">
 
         <div>
-          <p className="text-[18px] font-bold text-gray-900">Mere Orders</p>
+          <p className="text-[18px] font-bold text-gray-900">{t('ordersTitle')}</p>
           <p className="text-[13px] text-gray-400 mt-0.5">
-            Aapke sab kaam yahan hain
+            {t('ordersSubtitle')}
           </p>
         </div>
 
@@ -105,19 +103,19 @@ export default function OrdersPage() {
         <div className="grid grid-cols-3 gap-3">
           {[
             {
-              label: 'Ho Gaye',
+              label: t('done'),
               value: filtered.filter(o => o.status === 'done').length,
               color: 'text-emerald-600',
               bg: 'bg-[#E8F5ED] border-green-100',
             },
             {
-              label: 'Chal Rahe',
+              label: t('ongoing'),
               value: filtered.filter(o => o.status === 'ongoing').length,
               color: 'text-amber-600',
               bg: 'bg-amber-50 border-amber-100',
             },
             {
-              label: 'Pending',
+              label: t('pending'),
               value: filtered.filter(o => o.status === 'pending').length,
               color: 'text-gray-600',
               bg: 'bg-white border-gray-100',
@@ -139,24 +137,24 @@ export default function OrdersPage() {
 
         {/* Tabs */}
         <div className="flex gap-2">
-          {tabs.map(t => (
+          {tabs.map(tabKey => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={tabKey}
+              onClick={() => setTab(tabKey)}
               className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all ${
-                tab === t
+                tab === tabKey
                   ? 'bg-rose-500 border-rose-500 text-white'
                   : 'bg-white border-gray-200 text-gray-500'
               }`}
             >
-              {t}
+              {t(tabKey)}
             </button>
           ))}
         </div>
 
         {/* Orders */}
         <div className="flex flex-col gap-2.5">
-          {filtered.length === 0 && <p className="text-sm text-gray-400">Abhi is section mein koi order nahi hai.</p>}
+          {filtered.length === 0 && <p className="text-sm text-gray-400">{t('noOrders')}</p>}
           {filtered.map(o => (
             <div
               key={o.id}
@@ -197,7 +195,7 @@ export default function OrdersPage() {
                 <span
                   className={`text-[10px] font-medium px-2 py-0.5 rounded-full mt-1 inline-block ${statusStyle[o.status]}`}
                 >
-                  {statusMap[o.status]}
+                  {t(o.status)}
                 </span>
               </div>
 
@@ -208,11 +206,6 @@ export default function OrdersPage() {
             </div>
           ))}
 
-          {filtered.length === 0 && (
-            <div className="bg-white rounded-2xl p-8 text-center text-gray-500">
-              Koi order nahi mila.
-            </div>
-          )}
         </div>
 
       </div>

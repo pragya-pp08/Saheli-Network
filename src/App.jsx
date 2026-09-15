@@ -99,7 +99,7 @@ export default function App() {
             element={
               isLoggedIn ? (
                 <div key={accountId} className="flex min-h-screen bg-[#FAF7F2]">
-                  <Sidebar />
+                  <Sidebar accountMode={accountMode || 'worker'} />
 
                   <main className="flex-1 flex overflow-hidden">
                     <Routes>
@@ -119,9 +119,7 @@ export default function App() {
                           </PageTransition>
                         }
                       />
-                      {accountMode === 'worker' && (
-                        <Route path="/opportunities" element={<PageTransition><OpportunitiesPage /></PageTransition>} />
-                      )}
+                      <Route path="/opportunities" element={<PageTransition>{accountMode === 'customer' ? <CustomerJobsPage /> : <OpportunitiesPage />}</PageTransition>} />
                       {accountMode === 'customer' && (
                         <Route path="/customer-jobs" element={<PageTransition><CustomerJobsPage /></PageTransition>} />
                       )}
@@ -141,11 +139,9 @@ export default function App() {
                           </PageTransition>
                         }
                       />
-                      {accountMode === 'worker' && <>
-                        <Route path="/earnings" element={<PageTransition><EarningsPage /></PageTransition>} />
-                        <Route path="/salah" element={<PageTransition><SalahPage /></PageTransition>} />
-                        <Route path="/recovery-support" element={<PageTransition><RecoverySupportPage /></PageTransition>} />
-                      </>}
+                      <Route path="/earnings" element={<PageTransition><EarningsPage /></PageTransition>} />
+                      <Route path="/salah" element={<PageTransition><SalahPage /></PageTransition>} />
+                      <Route path="/recovery-support" element={<PageTransition><RecoverySupportPage /></PageTransition>} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </main>

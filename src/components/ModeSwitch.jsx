@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BriefcaseBusiness, Users } from "lucide-react";
 import { post } from "../services/api";
+import { useLanguage } from "../i18n/LanguageContext";
 
 export default function ModeSwitch({ currentMode = "worker", compact = false, subtle = false }) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [switching, setSwitching] = useState(false);
   const [error, setError] = useState("");
   const nextMode = currentMode === "customer" ? "worker" : "customer";
   const Icon = nextMode === "customer" ? Users : BriefcaseBusiness;
-  const label = nextMode === "customer"
-    ? "Switch to Hire a Saheli"
-    : "Switch to Kaam Chahiye";
+  const label = nextMode === "customer" ? t("hireSaheli") : t("findWork");
 
   async function switchMode() {
     if (switching) return;

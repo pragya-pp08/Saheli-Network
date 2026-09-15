@@ -7,8 +7,9 @@ import { useNavigate } from "react-router-dom";
 import LotusLogo from "../components/LotusLogo";
 
 import { auth } from "../firebase";
+import { useLanguage } from "../i18n/LanguageContext";
 
-const QUICK = [
+const QUICK_HINGLISH = [
   "Aaj kaun sa kaam karna chahiye?",
   "Is hafte zyada kamai kaise hogi?",
   "Meri skills kaise badhau?",
@@ -17,6 +18,12 @@ const QUICK = [
 
 export default function SalahPage() {
   const navigate = useNavigate();
+  const { language, t } = useLanguage();
+  const quick = language === 'hi'
+    ? ["आज कौन सा काम करूँ?", "इस हफ्ते कमाई कैसे बढ़ाऊँ?", "अपने कौशल कैसे बढ़ाऊँ?", "मेहंदी के अधिक काम कैसे मिलेंगे?"]
+    : language === 'en'
+      ? ["Which work should I choose today?", "How can I earn more this week?", "How can I improve my skills?", "How can I get more mehndi bookings?"]
+      : QUICK_HINGLISH;
 
   const [userProfile, setUserProfile] = useState(null);
   const [profileError, setProfileError] = useState("");
@@ -80,17 +87,19 @@ export default function SalahPage() {
   useEffect(() => {
     if (!userProfile) return;
 
+    const greeting = language === 'hi'
+      ? `नमस्ते ${userProfile.name}! मैं आपकी सहेली हूँ। आप मुझसे आसान हिंदी में काम, कौशल और कमाई के बारे में पूछ सकती हैं।`
+      : language === 'en'
+        ? `Hello ${userProfile.name}! I am your Saheli. You can ask me about work, skills and earnings, and I will reply in simple English.`
+        : `Namaste ${userProfile.name}! Main aapki Saheli hoon. Aap mujhse kaam, skills aur kamai ke baare mein aasaan bhasha mein poochh sakti hain.`;
+
     setMessages([
       {
         role: "ai",
-        text: `Namaste ${userProfile.name}! Main aapki Saheli hoon.
-
-Aap mujhse Hindi mein, English mein, ya jis bhasha mein aasaan lage, us mein baat kar sakti hain. Main waisi hi bhasha mein jawab dungi.
-
-Aaj aapko kis tarah ke kaam ya skill ke baare mein salah chahiye?`,
+        text: greeting,
       },
     ]);
-  }, [userProfile]);
+  }, [userProfile, language]);
 
   /* ---------------- Scroll ---------------- */
 
@@ -261,11 +270,11 @@ Rules:
 
         <div>
           <p className="text-[14px] font-semibold text-gray-900">
-            Saheli ki Salah
+          {t('advice')}
           </p>
 
           <p className="text-[11px] text-purple-500">
-            Aapki apni advisor
+            {t('adviceSubtitle')}
           </p>
         </div>
       </div>
@@ -289,11 +298,11 @@ Rules:
             }}
             className="mt-5 text-2xl font-bold text-gray-800"
           >
-            Namaste
+            {t('namaste')}
           </motion.h2>
 
           <p className="mt-2 text-gray-500 text-sm">
-            Main hoon aapki Saheli
+            {t('saheliIntro')}
           </p>
         </motion.div>
       )}
@@ -301,7 +310,7 @@ Rules:
       {/* Quick Prompts */}
       {quickVisible && (
         <div className="px-4 pt-3 pb-1 flex gap-2 flex-wrap flex-shrink-0">
-          {QUICK.map((q) => (
+          {quick.map((q) => (
             <motion.button
               key={q}
               whileHover={{ scale: 1.05 }}
@@ -418,7 +427,7 @@ Rules:
               send();
             }
           }}
-          placeholder="Kuch bhi poochho..."
+          placeholder={t('askAnything')}
           rows={1}
           className="flex-1 resize-none bg-[#FAF7F2] border border-gray-200 rounded-2xl px-4 py-2.5 text-[13px] text-gray-800 placeholder-gray-400 outline-none focus:border-purple-200 transition max-h-24 leading-relaxed"
           style={{ minHeight: "40px" }}

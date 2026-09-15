@@ -251,3 +251,40 @@ def test_refund_webhook_adjusts_earnings_once(client,monkeypatch):
         assert client.post('/payments/webhook',content=body,headers={'x-razorpay-signature':signature}).status_code == 200
     assert client.get('/earnings').json()['total'] == 500
     assert client.get('/earnings').json()['pending'] == 0
+
+
+def test_direct_upi_claim_requires_worker_confirmation(client):
+    job = make_order(client)
+    as_user('worker')
+    profile = client.get('/profile').json()
+    editable = {key: profile.get(key) for key in ('name','phone','location','language','skills','work_type','travel_distance','available_time','about','goal','coordinates')}
+    editable['upi_id'] = 'worker@upi'
+    assert client.patch('/profile', json=editable).status_code == 200
+    assert client.post(f'/orders/{job}/complete').status_code == 200
+
+    as_user('customer')
+    upi = client.get(f'/orders/{job}/upi')
+    assert upi.status_code == 200
+    assert upi.json()['upiId'] == 'worker@upi'
+    assert upi.json()['qr'].startswith('data:image/png;base64,')
+    assert client.post(f'/orders/{job}/payment-claim', json={'method':'upi','reference':'1'}).status_code == 400
+    assert client.post(f'/orders/{job}/payment-claim', json={'method':'upi','reference':'123456789012'}).status_code == 200
+
+    as_user('worker')
+    assert client.get(f'/orders/{job}').json()['paymentStatus'] == 'awaiting_confirmation'
+    assert client.get('/earnings').json()['total'] == 0
+    assert client.post(f'/orders/{job}/payment-confirm').status_code == 200
+    assert client.get('/earnings').json()['total'] == 600
+
+
+def test_customer_can_cancel_open_job_and_close_applications(client):
+    client.patch('/profile', json={'name':'Worker','location':'Area','skills':['Cooking']})
+    switch_mode(client, 'customer', 'customer')
+    job = client.post('/opportunities', json=dict(title='Cook dinner', category='Cooking', amountPaise=50000,
+        location='Area', address='Private address', phone='1234567890', date='2026-12-01', time='Evening')).json()['id']
+    as_user('worker')
+    assert client.post(f'/opportunities/{job}/apply').status_code == 200
+    as_user('customer')
+    assert client.post(f'/opportunities/{job}/cancel').status_code == 200
+    as_user('worker')
+    assert client.get('/applications').json()[0]['status'] == 'Closed'

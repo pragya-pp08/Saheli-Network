@@ -3,10 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Filter } from 'lucide-react'
 
 import { api, post } from '../services/api'
+import { useLanguage } from '../i18n/LanguageContext'
 
 const cats = ['Sab', 'Mehndi', 'Tailoring', 'Cooking', 'Tuition', 'Beautician']
 
 export default function OpportunitiesPage() {
+  const { t } = useLanguage()
   const [active, setActive] = useState('Sab')
   const [all, setAll] = useState([])
 
@@ -32,8 +34,8 @@ export default function OpportunitiesPage() {
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[18px] font-bold text-gray-900">Kaam ke Mauke</p>
-            <p className="text-[13px] text-gray-400 mt-0.5">Aaj {all.length} kaam available hain</p>
+            <p className="text-[18px] font-bold text-gray-900">{t('workOpportunities')}</p>
+            <p className="text-[13px] text-gray-400 mt-0.5">{t('availableWork', { count: all.length })}</p>
           </div>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -41,7 +43,7 @@ export default function OpportunitiesPage() {
             onClick={() => setNearbyOnly(!nearbyOnly)}
             className="flex items-center gap-1.5 text-[12px] text-gray-500 border border-gray-200 bg-white px-3 py-2 rounded-xl"
           >
-            <Filter size={13} /> {nearbyOnly ? "Within 5 km ✓" : "Within 5 km"}
+            <Filter size={13} /> {t('within5')}{nearbyOnly ? " ✓" : ""}
           </motion.button>
         </div>
 
@@ -49,7 +51,7 @@ export default function OpportunitiesPage() {
         {loading && <p className="text-sm text-gray-400">Loading opportunities...</p>}
         {!loading && !error && !filtered.length && (
           <p className="text-sm text-gray-400">
-            Abhi is category mein koi posted kaam available nahi hai. Naya customer job post karega to woh yahan automatically dikh jayega.
+            {t('noCategoryWork')}
           </p>
         )}
         {/* Category tabs */}
@@ -85,7 +87,7 @@ export default function OpportunitiesPage() {
                 <p className="text-[13px] font-semibold text-gray-900 leading-tight">{o.title}</p>
                 {o.urgent && (
                   <span className="text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full flex-shrink-0">
-                    Jaldi
+                    {t('urgent')}
                   </span>
                 )}
               </div>
@@ -112,7 +114,7 @@ export default function OpportunitiesPage() {
                       : "bg-rose-500 hover:bg-rose-600 text-white"
                   }`}
                 >
-                  {appliedJobs.includes(o.id) ? "✓ Applied" : "Apply Karo"}
+                  {appliedJobs.includes(o.id) ? `✓ ${t('applied')}` : t('apply')}
                 </motion.button>
               </div>
             </motion.div>
@@ -135,15 +137,15 @@ export default function OpportunitiesPage() {
                 className="bg-white rounded-2xl p-6 w-[420px]"
               >
                 <h2 className="text-xl font-bold mb-4">
-                  Kaam ke liye Apply Karein
+                  {t('applyTitle')}
                 </h2>
 
                 <div className="space-y-2 text-sm">
-                  <p><strong>Service:</strong> {selectedJob.title}</p>
-                  <p><strong>Distance:</strong> {selectedJob.dist}</p>
-                  <p><strong>Payment:</strong> {selectedJob.pay}</p>
-                  <p><strong>Time:</strong> {selectedJob.time}</p>
-                  <p><strong>Availability:</strong> {selectedJob.available_time}</p>
+                  <p><strong>{t('service')}:</strong> {selectedJob.title}</p>
+                  <p><strong>{t('distance')}:</strong> {selectedJob.dist}</p>
+                  <p><strong>{t('payment')}:</strong> {selectedJob.pay}</p>
+                  <p><strong>{t('time')}:</strong> {selectedJob.time}</p>
+                  <p><strong>{t('availability')}:</strong> {selectedJob.available_time}</p>
                 </div>
 
                 <div className="flex justify-end gap-3 mt-6">
@@ -153,7 +155,7 @@ export default function OpportunitiesPage() {
                     onClick={() => setSelectedJob(null)}
                     className="border px-4 py-2 rounded-lg"
                   >
-                    Cancel
+                    {t('cancel')}
                   </motion.button>
 
                   <motion.button
@@ -167,7 +169,7 @@ export default function OpportunitiesPage() {
                     }}
                     className="bg-rose-500 text-white px-5 py-2 rounded-lg"
                   >
-                    Apply Now
+                    {t('applyNow')}
                   </motion.button>
                 </div>
               </motion.div>

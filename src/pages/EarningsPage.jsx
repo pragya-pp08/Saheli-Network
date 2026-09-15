@@ -4,7 +4,9 @@ import { TrendingUp } from 'lucide-react'
 import AnimatedNumber from '../components/AnimatedNumber'
 
 import { api } from '../services/api'
+import { useLanguage } from '../i18n/LanguageContext'
 export default function EarningsPage() {
+  const { t } = useLanguage()
   const [earnings, setEarnings] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -52,9 +54,9 @@ export default function EarningsPage() {
       <div className="max-w-5xl mx-auto flex flex-col gap-5">
 
         <div>
-          <p className="text-[18px] font-bold text-gray-900">Meri Kamai</p>
+          <p className="text-[18px] font-bold text-gray-900">{t('earningsTitle')}</p>
           <p className="text-[13px] text-gray-400 mt-0.5">
-            Is saal ka pura hisaab
+            {t('earningsSubtitle')}
           </p>
         </div>
 
@@ -64,7 +66,7 @@ export default function EarningsPage() {
           className="bg-[#E8F5ED] border border-green-100 rounded-2xl px-6 py-5"
         >
           <p className="text-[12px] font-medium text-green-700 uppercase tracking-wide mb-1">
-            Is Mahine
+            {t('thisMonth')}
           </p>
 
           <p className="text-[36px] font-bold text-green-900 leading-none">
@@ -80,28 +82,28 @@ export default function EarningsPage() {
 
           <div className="mt-5 pt-4 border-t border-green-200 grid grid-cols-4 gap-4 text-center">
             <div>
-              <p className="text-[11px] text-green-700">Aaj</p>
+              <p className="text-[11px] text-green-700">{t('today')}</p>
               <p className="font-bold text-green-900">
                 ₹<AnimatedNumber value={earnings.today} />
               </p>
             </div>
 
             <div>
-              <p className="text-[11px] text-green-700">Is Hafte</p>
+              <p className="text-[11px] text-green-700">{t('thisWeek')}</p>
               <p className="font-bold text-green-900">
                 ₹<AnimatedNumber value={earnings.week} />
               </p>
             </div>
 
             <div>
-              <p className="text-[11px] text-green-700">Pending</p>
+              <p className="text-[11px] text-green-700">{t('pending')}</p>
               <p className="font-bold text-orange-600">
                 ₹<AnimatedNumber value={earnings.pending || 0} />
               </p>
             </div>
 
             <div>
-              <p className="text-[11px] text-green-700">Is Saal</p>
+              <p className="text-[11px] text-green-700">{t('thisYear')}</p>
               <p className="font-bold text-green-900">
                 ₹<AnimatedNumber value={total} />
               </p>
@@ -116,7 +118,7 @@ export default function EarningsPage() {
         >
           <div className="flex justify-between mb-3">
             <p className="font-semibold">
-              Monthly Goal
+              {t('monthlyGoal')}
             </p>
 
             <p className="text-sm text-gray-500">
@@ -182,10 +184,10 @@ export default function EarningsPage() {
           className="bg-white rounded-2xl border border-gray-100 px-5 py-5"
         >
           <p className="text-[14px] font-semibold text-gray-800 mb-3">
-            Haal ke Kaam
+            {t('recentWork')}
           </p>
 
-          {earnings.history.length === 0 && <p className="text-sm text-gray-400">Abhi koi confirmed payment nahi hai.</p>}
+          {earnings.history.length === 0 && <p className="text-sm text-gray-400">{t('noPayments')}</p>}
           {earnings.history.map(item => (
             <div
               key={item.id}

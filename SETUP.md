@@ -54,16 +54,22 @@ For deployment, set `VITE_API_URL` to the HTTPS backend URL when building the fr
 2. Use a separate browser session and register a customer using **Mujhe kaam karwana hai**. Open **Post & Manage Jobs** and add a real job.
 3. Worker: apply. Refresh; the application remains saved and appears under Orders as pending.
 4. Customer: Post & Manage Jobs → Select Worker. Exactly one worker can be assigned through a Firestore transaction.
-5. Worker: Orders → Mark Completed. The amount appears as pending, **not received earnings**.
-6. Customer: Pay Now. After verified capture, the worker's earnings and payment history update. A customer can review completed work.
+5. Worker: Profile → Edit and save a UPI ID, then Orders → Mark Completed. The amount appears as pending, **not received earnings**.
+6. Customer: Pay Now → scan the QR/open a UPI app, enter the transaction reference, or choose Cash. The provider confirms receipt from the order page; only then do earnings and payment history update. A customer can review completed work.
 7. Check the bell for saved application, assignment, completion and payment notifications. These are in-app notifications, not SMS, email or background push.
 8. Check another account cannot access the order URL. Refresh each account and confirm saved values remain separate.
 
-An account can switch between **Kaam Chahiye** and **Hire a Saheli** from the sidebar. The backend enforces the current mode: worker mode can browse/apply, while customer mode can post/select. An account's own posted jobs never appear in its worker opportunity list.
+An account can switch between **Kaam Chahiye** and **Hire a Saheli** from the dashboard or profile. The backend enforces the current mode: worker mode can browse/apply, while customer mode can post/select. An account's own posted jobs never appear in its worker opportunity list.
 
 Photos are resized and stripped of metadata on the server. This initial implementation stores a small avatar and up to four compact portfolio photos privately in the profile document; a larger public portfolio needs object storage and access rules.
 
-## 4. Universal UPI / QR checkout
+## 4. Universal UPI / QR payments
+
+The default local flow does not require a merchant gateway. A provider saves her own UPI ID in Profile. For a completed order, the backend creates an amount-locked `upi://pay` intent and QR code. The customer pays in any compatible UPI app and submits the transaction reference. The provider must confirm receipt before the order counts as paid earnings. Cash payments use the same customer-claim/provider-confirmation workflow.
+
+This records confirmation inside Saheli Network but cannot independently verify a personal UPI transfer with a bank. Production use should add reconciliation, disputes, evidence and support processes. Never count the customer claim alone as received income.
+
+### Optional merchant gateway
 
 The integration uses Razorpay Standard Checkout. Customers can use supported UPI apps; they do not need a Razorpay account. UPI intent is used on supported mobile browsers, while desktop checkout displays a QR code. Actual available methods depend on the merchant configuration and device. A personal PhonePe account does not provide the server callbacks needed to automatically verify payments.
 
