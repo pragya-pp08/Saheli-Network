@@ -5,7 +5,7 @@ function random(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-const PETAL_COUNT = 14;
+const PETAL_COUNT = 9;
 
 export default function FloatingPetals() {
   const petals = React.useMemo(

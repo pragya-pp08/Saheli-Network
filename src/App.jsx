@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { lazy, Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -6,27 +6,32 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 
 import Sidebar from "./components/Sidebar";
-import Dashboard from "./pages/Dashboard";
-import ProfilePage from "./pages/ProfilePage";
-import OpportunitiesPage from "./pages/OpportunitiesPage";
-import OrdersPage from "./pages/OrdersPage";
-import EarningsPage from "./pages/EarningsPage";
-import SalahPage from "./pages/SalahPage";
-import OrderDetailsPage from "./pages/OrderDetails";
-import RecoverySupportPage from "./pages/RecoverySupportPage";
-import CustomerDashboard from "./pages/CustomerDashboard";
-import CustomerJobsPage from "./pages/CustomerJobsPage";
-import LoginPage from "./pages/LoginPage";
 import SplashScreen from "./components/SplashScreen";
 import FloatingPetals from "./components/FloatingPetals";
 import { api } from "./services/api";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const OpportunitiesPage = lazy(() => import("./pages/OpportunitiesPage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const EarningsPage = lazy(() => import("./pages/EarningsPage"));
+const SalahPage = lazy(() => import("./pages/SalahPage"));
+const OrderDetailsPage = lazy(() => import("./pages/OrderDetails"));
+const RecoverySupportPage = lazy(() => import("./pages/RecoverySupportPage"));
+const CustomerDashboard = lazy(() => import("./pages/CustomerDashboard"));
+const CustomerJobsPage = lazy(() => import("./pages/CustomerJobsPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+
+function LoadingScreen() {
+  return <div className="flex flex-1 items-center justify-center bg-[#FAF7F2] text-sm text-gray-500">Loading...</div>;
+}
 
 function PageTransition({ children }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.2 }}
       className="flex-1 flex flex-col w-full overflow-hidden"
     >
       {children}
@@ -34,42 +39,72 @@ function PageTransition({ children }) {
   );
 }
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(
+    () => sessionStorage.getItem("saheli-splash-seen") !== "1"
+  );
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [accountId, setAccountId] = useState(null);
   const [accountMode, setAccountMode] = useState(null);
+  const [accountError, setAccountError] = useState("");
+  const modeRequest = useRef(0);
+
+  const syncAccountMode = useCallback(async ({ retries = 0 } = {}) => {
+    const requestId = ++modeRequest.current;
+    setAccountError("");
+    for (let attempt = 0; attempt <= retries; attempt += 1) {
+      try {
+        const summary = await api('/account-summary');
+        if (requestId === modeRequest.current) {
+          setAccountMode(summary.accountMode || 'worker');
+          setAccountError("");
+        }
+        return;
+      } catch (error) {
+        if (attempt < retries) {
+          await new Promise(resolve => setTimeout(resolve, 300 * (attempt + 1)));
+          continue;
+        }
+        if (requestId === modeRequest.current) setAccountError(error.message);
+      }
+    }
+  }, []);
+
   useEffect(() => onAuthStateChanged(auth, async user => {
     setIsLoggedIn(!!user);
     setAccountId(user?.uid || null);
     if (!user) {
+      modeRequest.current += 1;
       setAccountMode(null);
+      setAccountError("");
       setAuthLoading(false);
       return;
     }
-    try {
-      const summary = await api('/account-summary');
-      setAccountMode(summary.accountMode || 'worker');
-    } catch {
-      setAccountMode('worker');
-    } finally {
-      setAuthLoading(false);
-    }
-  }), []);
+    setAuthLoading(true);
+    await syncAccountMode({ retries: 4 });
+    setAuthLoading(false);
+  }), [syncAccountMode]);
 
   useEffect(() => {
+    if (!showSplash) return undefined;
     const timer = setTimeout(() => {
+      sessionStorage.setItem("saheli-splash-seen", "1");
       setShowSplash(false);
-    }, 3200);
+    }, 1100);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [showSplash]);
 
   useEffect(() => {
     const handleModeChange = (event) => setAccountMode(event.detail?.mode || 'worker');
+    const refreshMode = () => syncAccountMode({ retries: 2 });
     window.addEventListener('saheli-mode-changed', handleModeChange);
-    return () => window.removeEventListener('saheli-mode-changed', handleModeChange);
-  }, []);
+    window.addEventListener('saheli-refresh-account-mode', refreshMode);
+    return () => {
+      window.removeEventListener('saheli-mode-changed', handleModeChange);
+      window.removeEventListener('saheli-refresh-account-mode', refreshMode);
+    };
+  }, [syncAccountMode]);
 
   return (
     <>
@@ -81,6 +116,7 @@ export default function App() {
       </AnimatePresence>
 
       {!showSplash && !authLoading && (
+        <Suspense fallback={<LoadingScreen />}>
         <Routes>
           <Route
             path="/login"
@@ -88,7 +124,11 @@ export default function App() {
               <PageTransition>
                   <LoginPage onLogin={(mode) => {
                     setIsLoggedIn(true);
-                    if (mode) setAccountMode(mode);
+                    if (mode) {
+                      modeRequest.current += 1;
+                      setAccountMode(mode);
+                      setAccountError("");
+                    }
                   }} />
                 </PageTransition>
             }
@@ -97,7 +137,22 @@ export default function App() {
           <Route
             path="/*"
             element={
-              isLoggedIn ? (
+              isLoggedIn && accountError ? (
+                <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center gap-3 px-6 text-center">
+                  <p className="text-sm text-red-500" role="alert">{accountError}</p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setAuthLoading(true);
+                      await syncAccountMode({ retries: 2 });
+                      setAuthLoading(false);
+                    }}
+                    className="rounded-xl bg-rose-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rose-600"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : isLoggedIn && accountMode ? (
                 <div key={accountId} className="flex min-h-screen bg-[#FAF7F2]">
                   <Sidebar accountMode={accountMode || 'worker'} />
 
@@ -152,6 +207,7 @@ export default function App() {
             }
           />
         </Routes>
+        </Suspense>
       )}
     </>
   );

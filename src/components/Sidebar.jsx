@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   User,
@@ -30,7 +30,6 @@ const navItems = [
 export default function Sidebar({ accountMode = "worker" }) {
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const { pathname } = useLocation();
   const [summary, setSummary] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
   useEffect(() => {
@@ -39,7 +38,7 @@ export default function Sidebar({ accountMode = "worker" }) {
     load(); const timer = setInterval(load, 60000);
     window.addEventListener('saheli-data-changed', load);
     return () => { cancelled = true; clearInterval(timer); window.removeEventListener('saheli-data-changed', load); };
-  }, [pathname]);
+  }, []);
 
   return (
     <aside className="w-52 min-w-[208px] flex flex-col bg-white border-r border-gray-100 min-h-screen">

@@ -105,13 +105,14 @@ def account_summary(user=Depends(current_user)):
     person = profile_for(user)
     mode = person.get('accountMode', 'worker')
     records = worker_orders(user['uid']) if mode == 'worker' else rows('orders', 'customerId', user['uid'])
-    pending = applications(user) if mode == 'worker' else []
+    pending = rows('applications', 'workerId', user['uid']) if mode == 'worker' else []
+    user_notifications = rows('notifications', 'userId', user['uid'])
     return dict(name=person['name'], avatar=person.get('avatar'),
                 accountMode=mode,
                 completed=sum(o['status'] == 'Completed' for o in records),
                 pending=sum(a['status'] == 'Pending' for a in pending),
                 recovery=person.get('recoveryStatus', {}).get('active', False),
-                unread=sum(not n.get('read') for n in notifications(user)))
+                unread=sum(not n.get('read') for n in user_notifications))
 
 
 class StrictModel(BaseModel):
@@ -194,10 +195,11 @@ def earnings(user=Depends(current_user)):
 def dashboard(user=Depends(current_user)):
     data = profile(user)
     e = data['earnings']
+    available = opportunities(user)
     return dict(name=data['name'], rating=data['rating'], jobs_completed=data['jobs_completed'],
                 today_earnings=e['today'], week_earnings=e['week'],
                 monthly_progress=min(100, round(e['month'] / e['goal'] * 100)) if e['goal'] else 0,
-                new_opportunities=len(opportunities(user)), opportunities=opportunities(user)[:3], salah=None)
+                new_opportunities=len(available), opportunities=available[:3], salah=None)
 
 
 class Photo(StrictModel):
