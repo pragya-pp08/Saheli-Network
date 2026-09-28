@@ -300,7 +300,7 @@ def opportunities(user=Depends(current_user)):
         result.append(dict(id=job['id'], title=job['title'], category=job['category'], location=job['location'],
                            dist=f'{distance} km' if distance is not None else job['location'], distance=distance,
                            time=job['date'], available_time=job['time'], pay=f"₹{job['amountPaise']/100:,.2f}",
-                           urgent=job['urgent'], isOwn=is_own))
+                           urgent=job['urgent'], gpsAvailable=bool(job.get('coordinates')), isOwn=is_own))
     preferred = data.get('skills', [])
     return sorted(result, key=lambda j: (j['isOwn'], j['category'] not in preferred, not j['urgent'],
                                          j['distance'] if j['distance'] is not None else float('inf')))
@@ -330,8 +330,6 @@ def applications(user=Depends(current_user)):
 @app.post('/opportunities/{job_id}/apply')
 def apply(job_id: str, user=Depends(current_user)):
     worker = require_mode(user, 'worker')
-    if not worker.get('skills') or not worker.get('location'):
-        raise HTTPException(400, 'Please add your skills and location in Profile first.')
     job_ref = db().collection('jobs').document(job_id)
     ref = db().collection('applications').document(f"{job_id}_{user['uid']}")
     @firestore.transactional
@@ -391,7 +389,8 @@ def accept(application_id: str, user=Depends(current_user)):
                     customerId=user['uid'], customer=job['customer'], service=job['title'],
                     phone=job['phone'], address=job['address'], date=job['date'], time=job['time'],
                     description=job['description'], amountPaise=job['amountPaise'],
-                    amount=f"₹{job['amountPaise']/100:,.2f}", status='Upcoming', paymentStatus='unpaid', createdAt=now()))
+                    coordinates=job.get('coordinates'), amount=f"₹{job['amountPaise']/100:,.2f}",
+                    status='Upcoming', paymentStatus='unpaid', advancePaymentStatus='none', createdAt=now()))
         notification(tx, f'assigned_{order_ref.id}', application['workerId'], f"You were selected for {job['title']}", f'/orders/{order_ref.id}')
     assign(db().transaction())
     return {'id': order_ref.id}
@@ -444,24 +443,95 @@ def complete(order_id: str, user=Depends(current_user)):
     return order_details(order_id, user)
 
 
-@app.get('/orders/{order_id}/upi')
-def upi_details(order_id: str, user=Depends(current_user)):
-    order = order_details(order_id, user)
-    if not order['isCustomer'] or order['status'] != 'Completed' or order.get('paymentStatus') == 'paid':
-        raise HTTPException(409, 'UPI payment is available for completed, unpaid work.')
+def upi_payload(order, amount_paise):
     worker = get_doc('users', order['workerId'])
     upi_id = worker.get('upi_id', '').strip()
     if not upi_id or '@' not in upi_id or ' ' in upi_id:
         raise HTTPException(409, 'The Saheli has not added a valid UPI ID to her profile yet.')
-    params = urlencode({'pa': upi_id, 'pn': worker.get('name', 'Saheli'), 'am': f"{order['amountPaise']/100:.2f}",
+    params = urlencode({'pa': upi_id, 'pn': worker.get('name', 'Saheli'), 'am': f"{amount_paise/100:.2f}",
                         'cu': 'INR', 'tn': f"Saheli Network - {order['service']}"})
     uri = f'upi://pay?{params}'
     import qrcode
     image = qrcode.make(uri)
     output = BytesIO()
     image.save(output, format='PNG')
-    return {'upiId': upi_id, 'payee': worker.get('name', 'Saheli'), 'amount': order['amountPaise'] / 100,
+    return {'upiId': upi_id, 'payee': worker.get('name', 'Saheli'), 'amount': amount_paise / 100,
             'uri': uri, 'qr': 'data:image/png;base64,' + base64.b64encode(output.getvalue()).decode()}
+
+
+@app.get('/orders/{order_id}/upi')
+def upi_details(order_id: str, user=Depends(current_user)):
+    order = order_details(order_id, user)
+    if not order['isCustomer'] or order['status'] != 'Completed' or order.get('paymentStatus') == 'paid':
+        raise HTTPException(409, 'UPI payment is available for completed, unpaid work.')
+    paid_advance = order.get('advanceAmountPaise', 0) if order.get('advancePaymentStatus') == 'paid' else 0
+    return upi_payload(order, order['amountPaise'] - paid_advance)
+
+
+class AdvanceRequest(StrictModel):
+    amountPaise: int = Field(gt=0, le=10000000)
+
+
+@app.post('/orders/{order_id}/advance-request')
+def request_advance(order_id: str, data: AdvanceRequest, user=Depends(current_user)):
+    order = order_details(order_id, user)
+    if order['workerId'] != user['uid'] or order['status'] != 'Upcoming':
+        raise HTTPException(409, 'Advance can only be requested by the selected Saheli before work is completed.')
+    if data.amountPaise >= order['amountPaise']:
+        raise HTTPException(400, 'Advance must be less than the full job amount.')
+    upi_payload(order, data.amountPaise)
+    ref = db().collection('orders').document(order_id)
+    @firestore.transactional
+    def save(tx):
+        tx.update(ref, {'advanceAmountPaise': data.amountPaise, 'advancePaymentStatus': 'requested',
+                        'advanceRequestedAt': now()})
+        notification(tx, f'advance_{order_id}', order['customerId'],
+                     f"Advance requested for {order['service']}", f'/orders/{order_id}')
+    save(db().transaction())
+    return {'success': True}
+
+
+@app.get('/orders/{order_id}/advance-upi')
+def advance_upi(order_id: str, user=Depends(current_user)):
+    order = order_details(order_id, user)
+    if not order['isCustomer'] or order.get('advancePaymentStatus') != 'requested':
+        raise HTTPException(409, 'There is no pending advance-payment request for this order.')
+    return upi_payload(order, order['advanceAmountPaise'])
+
+
+class AdvanceClaim(StrictModel):
+    reference: str = Field(min_length=6, max_length=100)
+
+
+@app.post('/orders/{order_id}/advance-payment-claim')
+def claim_advance(order_id: str, data: AdvanceClaim, user=Depends(current_user)):
+    order = order_details(order_id, user)
+    if not order['isCustomer'] or order.get('advancePaymentStatus') != 'requested':
+        raise HTTPException(409, 'There is no pending advance-payment request for this order.')
+    ref = db().collection('orders').document(order_id)
+    @firestore.transactional
+    def save(tx):
+        tx.update(ref, {'advancePaymentStatus': 'awaiting_confirmation',
+                        'advancePaymentReference': data.reference, 'advancePaymentClaimedAt': now()})
+        notification(tx, f'advance_claim_{order_id}', order['workerId'],
+                     f"Please confirm advance payment for {order['service']}", f'/orders/{order_id}')
+    save(db().transaction())
+    return {'success': True}
+
+
+@app.post('/orders/{order_id}/advance-payment-confirm')
+def confirm_advance(order_id: str, user=Depends(current_user)):
+    order = order_details(order_id, user)
+    if order['workerId'] != user['uid'] or order.get('advancePaymentStatus') != 'awaiting_confirmation':
+        raise HTTPException(409, 'The customer has not submitted an advance payment to confirm.')
+    ref = db().collection('orders').document(order_id)
+    @firestore.transactional
+    def save(tx):
+        tx.update(ref, {'advancePaymentStatus': 'paid', 'advancePaidAt': now()})
+        notification(tx, f'advance_paid_{order_id}', order['customerId'],
+                     f"Advance confirmed for {order['service']}", f'/orders/{order_id}')
+    save(db().transaction())
+    return {'success': True}
 
 
 class PaymentClaim(StrictModel):

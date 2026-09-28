@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Clock, Filter } from 'lucide-react'
+import { MapPin, Clock, Filter, Navigation } from 'lucide-react'
 
 import { api, post } from '../services/api'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -19,6 +19,8 @@ export default function OpportunitiesPage() {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [nearbyOnly, setNearbyOnly] = useState(false);
+  const [applyError, setApplyError] = useState('');
+  const [success, setSuccess] = useState('');
   async function load() {
     setError('');
     try { const [jobs, applications] = await Promise.all([api('/opportunities'), api('/applications')]); setAll(jobs); setAppliedJobs(applications.map(a => a.jobId)); }
@@ -48,6 +50,7 @@ export default function OpportunitiesPage() {
         </div>
 
         {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
+        {success && <p role="status" className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{success}</p>}
         {loading && <p className="text-sm text-gray-400">Loading opportunities...</p>}
         {!loading && !error && !filtered.length && (
           <p className="text-sm text-gray-400">
@@ -100,6 +103,7 @@ export default function OpportunitiesPage() {
                 <p className="text-[11px] text-gray-400 flex items-center gap-1">
                   <MapPin size={10} /> {o.dist}
                 </p>
+                {o.gpsAvailable && <p className="text-[11px] font-medium text-green-600">● GPS location available after selection</p>}
                 <p className="text-[11px] text-gray-400 flex items-center gap-1">
                   <Clock size={10} /> {o.time}
                 </p>
@@ -124,6 +128,14 @@ export default function OpportunitiesPage() {
                   {o.isOwn ? t('yourJob') : appliedJobs.includes(o.id) ? `✓ ${t('applied')}` : t('apply')}
                 </motion.button>
               </div>
+              <button
+                type="button"
+                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(o.location)}`, '_blank', 'noopener,noreferrer')}
+                className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-blue-600 hover:text-blue-700"
+              >
+                <Navigation size={11} /> View area on Google Maps
+              </button>
+              {o.isOwn && <p className="text-[11px] text-purple-600">This is your own post. Sign in with another Saheli account to apply.</p>}
             </motion.div>
           ))}
         </div>
@@ -154,12 +166,13 @@ export default function OpportunitiesPage() {
                   <p><strong>{t('time')}:</strong> {selectedJob.time}</p>
                   <p><strong>{t('availability')}:</strong> {selectedJob.available_time}</p>
                 </div>
+                {applyError && <p role="alert" className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{applyError}</p>}
 
                 <div className="flex justify-end gap-3 mt-6">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => setSelectedJob(null)}
+                    onClick={() => { setSelectedJob(null); setApplyError(''); }}
                     className="border px-4 py-2 rounded-lg"
                   >
                     {t('cancel')}
@@ -170,9 +183,14 @@ export default function OpportunitiesPage() {
                     whileTap={{ scale: 0.95 }}
                     disabled={busy}
                     onClick={async () => {
-                      setBusy(true); setError('');
-                      try { await post('/opportunities/' + selectedJob.id + '/apply'); setAppliedJobs(prev => [...prev, selectedJob.id]); setSelectedJob(null); }
-                      catch (err) { alert(err.message); } finally { setBusy(false); }
+                      setBusy(true); setApplyError('');
+                      try {
+                        await post('/opportunities/' + selectedJob.id + '/apply');
+                        setAppliedJobs(prev => [...prev, selectedJob.id]);
+                        setSuccess(`Application sent for ${selectedJob.title}. You can track it in Orders.`);
+                        setSelectedJob(null);
+                      }
+                      catch (err) { setApplyError(err.message); } finally { setBusy(false); }
                     }}
                     className="bg-rose-500 text-white px-5 py-2 rounded-lg"
                   >

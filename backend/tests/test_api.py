@@ -289,6 +289,36 @@ def test_direct_upi_claim_requires_worker_confirmation(client):
     assert client.get('/earnings').json()['total'] == 600
 
 
+def test_exact_gps_and_advance_payment_are_available_after_assignment(client):
+    client.patch('/profile', json={'name':'Worker', 'skills':[], 'location':'', 'upi_id':'worker@upi'})
+    switch_mode(client, 'customer', 'customer')
+    job = client.post('/opportunities', json=dict(
+        title='Cook dinner', category='Cooking', amountPaise=50000, location='Test Area',
+        address='Private address', phone='1234567890', date='2026-12-01', time='Evening',
+        coordinates={'lat': 25.4358, 'lng': 81.8463}
+    )).json()['id']
+
+    as_user('worker')
+    listing = client.get('/opportunities').json()[0]
+    assert 'coordinates' not in listing
+    assert client.post(f'/opportunities/{job}/apply').status_code == 200
+    application = client.get('/applications').json()[0]['id']
+
+    as_user('customer')
+    assert client.post(f'/applications/{application}/accept').status_code == 200
+    assert client.get(f'/orders/{job}').json()['coordinates'] == {'lat': 25.4358, 'lng': 81.8463}
+
+    as_user('worker')
+    assert client.post(f'/orders/{job}/advance-request', json={'amountPaise': 10000}).status_code == 200
+    as_user('customer')
+    advance = client.get(f'/orders/{job}/advance-upi')
+    assert advance.status_code == 200 and advance.json()['amount'] == 100
+    assert client.post(f'/orders/{job}/advance-payment-claim', json={'reference':'123456789012'}).status_code == 200
+    as_user('worker')
+    assert client.post(f'/orders/{job}/advance-payment-confirm').status_code == 200
+    assert client.get(f'/orders/{job}').json()['advancePaymentStatus'] == 'paid'
+
+
 def test_customer_can_cancel_open_job_and_close_applications(client):
     client.patch('/profile', json={'name':'Worker','location':'Area','skills':['Cooking']})
     switch_mode(client, 'customer', 'customer')
