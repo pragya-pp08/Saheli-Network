@@ -26,6 +26,7 @@ const navItems = [
   { to: "/earnings", icon: Coins, labelKey: "earnings" },
   { to: "/salah", icon: MessageCircleHeart, labelKey: "advice" },
 ];
+const mobileNavItems = [navItems[1], navItems[2], navItems[3], navItems[4], navItems[0]];
 
 export default function Sidebar({ accountMode = "worker" }) {
   const navigate = useNavigate();
@@ -40,8 +41,14 @@ export default function Sidebar({ accountMode = "worker" }) {
     return () => { cancelled = true; clearInterval(timer); window.removeEventListener('saheli-data-changed', load); };
   }, []);
 
+  const destination = (to) => to === "/opportunities" && accountMode === "customer" ? "/customer-jobs" : to;
   return (
-    <aside className="w-52 min-w-[208px] flex flex-col bg-white border-r border-gray-100 min-h-screen">
+    <>
+    <header className="md:hidden fixed inset-x-0 top-0 z-40 h-16 bg-white border-b border-gray-100 px-4 flex items-center justify-between">
+      <div className="flex items-center gap-2"><LotusLogo size={20} /><span className="font-semibold text-rose-500">Saheli Network</span></div>
+      <div className="flex items-center gap-3"><LanguageSelector /><button aria-label="Notifications" onClick={() => setShowNotifications(true)} className="relative"><Bell size={20} className={summary?.unread ? "text-rose-500" : "text-gray-400"} />{summary?.unread > 0 && <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-rose-500" />}</button></div>
+    </header>
+    <aside className="hidden md:flex w-52 min-w-[208px] flex-col bg-white border-r border-gray-100 min-h-screen">
       <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-1.5">
           <LotusLogo size={18} />
@@ -61,7 +68,6 @@ export default function Sidebar({ accountMode = "worker" }) {
         >
           <Bell size={16} className={summary?.unread ? "text-rose-500" : "text-gray-400"} />
         </motion.button>
-        {showNotifications && <Notifications onClose={() => setShowNotifications(false)} />}
       </div>
 
       <div className="flex flex-col items-start px-4 pt-4 pb-4 border-b border-gray-100">
@@ -83,7 +89,7 @@ export default function Sidebar({ accountMode = "worker" }) {
         {navItems.map(({ to, icon: Icon, labelKey }) => (
           <NavLink
             key={to}
-            to={to === "/opportunities" && accountMode === "customer" ? "/customer-jobs" : to}
+            to={destination(to)}
             end={to === "/"}
             className={({ isActive }) =>
               `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[14px] transition-colors duration-150 ${
@@ -125,5 +131,10 @@ export default function Sidebar({ accountMode = "worker" }) {
         </button>
       </div>
     </aside>
+    <nav className="md:hidden fixed inset-x-0 bottom-0 z-40 h-20 bg-white border-t border-gray-100 flex items-center justify-around px-1">
+      {mobileNavItems.map(({ to, icon: Icon, labelKey }) => <NavLink key={to} to={destination(to)} end={to === "/"} className={({isActive}) => `min-w-0 flex-1 flex flex-col items-center gap-1 py-2 text-[10px] ${isActive ? "text-rose-600 font-semibold" : "text-gray-500"}`}><Icon size={19}/><span className="truncate max-w-full px-1">{t(labelKey)}</span></NavLink>)}
+    </nav>
+    {showNotifications && <Notifications onClose={() => setShowNotifications(false)} />}
+    </>
   );
 }

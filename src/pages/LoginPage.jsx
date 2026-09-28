@@ -80,7 +80,7 @@ export default function LoginPage({ onLogin }) {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative bg-white rounded-3xl shadow-lg p-10 w-[420px]"
+        className="relative bg-white rounded-3xl shadow-lg p-6 sm:p-10 w-full max-w-[420px]"
       >
 
         <LanguageSelector className="absolute right-5 top-5" />

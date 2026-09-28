@@ -13,6 +13,16 @@
     color: #1a1a1a;
     margin: 0;
     padding: 0;
+    min-width: 320px;
+  }
+
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid #fb7185;
+    outline-offset: 2px;
   }
 }
 

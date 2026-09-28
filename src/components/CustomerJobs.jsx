@@ -27,7 +27,7 @@ export default function CustomerJobs({ onChanged = () => {}, expanded = false })
   }, [expanded]);
 
   return <>
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-wrap">
       <button onClick={() => setCreating(true)} className="bg-rose-500 text-white px-3 py-2 rounded-xl text-xs">+ {t('postJob')}</button>
       {!expanded && <button disabled={busy} onClick={() => jobs ? setJobs(null) : load()} className="border border-gray-200 bg-white px-3 py-2 rounded-xl text-xs text-gray-500">{t('myPostedJobs')}</button>}
     </div>
@@ -41,7 +41,7 @@ export default function CustomerJobs({ onChanged = () => {}, expanded = false })
       <h2 className="font-semibold">{t('myPostedJobs')}</h2>
       {jobs.length === 0 && <p className="text-sm text-gray-400">Abhi koi kaam post nahi kiya hai.</p>}
       {jobs.map(job => <div key={job.id} className="border-b border-gray-100 pb-3 text-sm">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
           <p className="font-medium">{job.title} · {job.status}</p>
           {job.status === 'open' && <button disabled={busy} className="text-xs text-red-500" onClick={async () => {
             setBusy(true); setError('');
@@ -50,7 +50,7 @@ export default function CustomerJobs({ onChanged = () => {}, expanded = false })
           }}>{t('cancelJob')}</button>}
         </div>
         {!job.applications.length && <p className="text-gray-400">{t('waitingApplications')}</p>}
-        {job.applications.map(a => <div key={a.id} className="flex items-center justify-between mt-2">
+        {job.applications.map(a => <div key={a.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-2">
           <span>{a.name} · {a.skills.join(', ')}</span>
           <button disabled={busy || job.status !== 'open'} className="bg-rose-50 text-rose-600 px-3 py-1 rounded-lg disabled:text-gray-400" onClick={async () => {
             setBusy(true); setError('');

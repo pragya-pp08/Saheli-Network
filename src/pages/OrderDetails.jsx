@@ -56,7 +56,7 @@ export default function OrderDetailsPage() {
   }
 
   return (
-    <div className="flex-1 p-8 bg-[#FAF7F2]">
+    <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#FAF7F2]">
 
       <div className="max-w-4xl mx-auto">
         {error && <p role="alert" className="text-sm text-red-500 mb-3">{error}</p>}
@@ -101,13 +101,13 @@ export default function OrderDetailsPage() {
 
         {/* Card */}
 
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 md:p-8">
 
-          <div className="flex justify-between items-center mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-8">
 
             <div>
 
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
                 {order.service}
               </h1>
 
@@ -131,7 +131,7 @@ export default function OrderDetailsPage() {
 
           {/* Details */}
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 
             <div className="bg-[#FAF7F2] rounded-xl p-4">
               <p className="text-sm text-gray-500">Customer</p>
@@ -197,7 +197,7 @@ export default function OrderDetailsPage() {
           {!order.isCustomer && order.paymentStatus === 'awaiting_confirmation' && <button disabled={busy} onClick={() => action(() => post(`/orders/${id}/payment-confirm`))} className="mt-4 bg-green-600 text-white px-5 py-2 rounded-xl">{busy ? 'Please wait...' : 'Confirm Payment Received'}</button>}
           {/* Buttons */}
 
-          <div className="grid grid-cols-3 gap-4 mt-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 mt-10">
 
             <button
               onClick={() => window.open(`tel:${order.phone}`)}

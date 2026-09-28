@@ -260,18 +260,18 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative flex-1 px-10 py-8 flex flex-col gap-6 max-w-5xl mx-auto overflow-hidden">
+    <div className="relative flex-1 px-4 md:px-10 py-5 md:py-8 flex flex-col gap-6 max-w-5xl mx-auto overflow-y-auto">
 
 
       <div className="relative z-10 flex flex-col gap-6">
         {/* Row 1 */}
-        <div className="grid grid-cols-[1fr_220px] gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
           <WelcomeCard dashboard={dashboard} t={t} />
           <EarningsCard dashboard={dashboard} t={t} />
         </div>
 
         {/* Row 2 */}
-        <div className="grid grid-cols-[1fr_1.4fr] gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-4">
           <SalahCard dashboard={dashboard} onOpen={() => navigate("/salah")} t={t} />
           <AajKeKaamCard navigate={navigate} jobs={dashboard?.opportunities} t={t} />
         </div>

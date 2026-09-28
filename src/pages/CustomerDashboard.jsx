@@ -91,10 +91,10 @@ export default function CustomerDashboard() {
   if (!data) return <div className="flex-1 flex items-center justify-center text-gray-500">Loading Dashboard...</div>;
 
   return (
-    <div className="relative flex-1 px-10 py-8 flex flex-col gap-6 max-w-5xl mx-auto overflow-hidden">
+    <div className="relative flex-1 px-4 md:px-10 py-5 md:py-8 flex flex-col gap-6 max-w-5xl mx-auto overflow-y-auto">
       <div className="relative z-10 flex flex-col gap-6">
-        <div className="grid grid-cols-[1fr_220px] gap-4"><WelcomeCard data={data} navigate={navigate} t={t} /><PaymentCard data={data} t={t} /></div>
-        <div className="grid grid-cols-[1fr_1.4fr] gap-4"><HiringCard data={data} navigate={navigate} t={t} /><RecentJobs data={data} navigate={navigate} t={t} /></div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4"><WelcomeCard data={data} navigate={navigate} t={t} /><PaymentCard data={data} t={t} /></div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-4"><HiringCard data={data} navigate={navigate} t={t} /><RecentJobs data={data} navigate={navigate} t={t} /></div>
       </div>
     </div>
   );

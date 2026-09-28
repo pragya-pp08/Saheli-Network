@@ -89,7 +89,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
+    <div className="flex-1 overflow-y-auto px-4 md:px-10 py-5 md:py-6 bg-[#FAF7F2]">
       <div className="max-w-5xl mx-auto flex flex-col gap-5">
 
         <div>

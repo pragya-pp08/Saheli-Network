@@ -156,7 +156,7 @@ export default function App() {
                 <div key={accountId} className="flex min-h-screen bg-[#FAF7F2]">
                   <Sidebar accountMode={accountMode || 'worker'} />
 
-                  <main className="flex-1 flex overflow-hidden">
+                  <main className="flex-1 flex overflow-hidden pt-16 pb-20 md:pt-0 md:pb-0 min-w-0">
                     <Routes>
                       <Route
                         path="/"

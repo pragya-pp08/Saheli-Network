@@ -154,7 +154,7 @@ export default function ProfilePage() {
   /* ---------------- PROFILE UI ---------------- */
 
   return (
-    <div className="flex-1 overflow-y-auto px-10 py-6 bg-[#FAF7F2]">
+    <div className="flex-1 overflow-y-auto px-4 md:px-10 py-5 md:py-6 bg-[#FAF7F2]">
       <div className="max-w-5xl mx-auto flex flex-col gap-5">
         {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
         {editing && <EditForm title={t('profileEdit')} fields={fields} initial={{...profile, skillsText:(profile.skills || []).join(", ")}} location onSave={persist} onClose={() => setEditing(false)} />}
