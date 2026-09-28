@@ -25,7 +25,7 @@ const children = [
     cwd: backend,
     stdio: "inherit",
   }),
-  spawn(process.execPath, [vite, "--host", "127.0.0.1", "--port", "5173", "--strictPort"], {
+  spawn(process.execPath, [vite, "--host", "127.0.0.1", "--port", "5173", "--strictPort", "--open"], {
     cwd: root,
     stdio: "inherit",
   }),
