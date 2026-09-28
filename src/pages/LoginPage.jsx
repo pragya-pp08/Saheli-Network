@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import LotusLogo from "../components/LotusLogo";
 import { useNavigate } from "react-router-dom";
-import { loginUser, registerUser } from "../services/auth";
+import { loginUser, registerUser, resetPassword } from "../services/auth";
 import { updateProfile } from "firebase/auth";
 import { post } from "../services/api";
 import LanguageSelector from "../components/LanguageSelector";
@@ -11,7 +11,7 @@ import { useLanguage } from "../i18n/LanguageContext";
 
 export default function LoginPage({ onLogin }) {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -19,17 +19,27 @@ export default function LoginPage({ onLogin }) {
   const [accountMode, setAccountMode] = useState("worker");
 
   const [isRegister, setIsRegister] = useState(false);
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   async function handleSubmit(e) {
     e.preventDefault();
 
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
-      if (isRegister) {
+      if (isResetPassword) {
+        if (!email.trim()) {
+          setError(t("enterResetEmail"));
+          return;
+        }
+        await resetPassword(email.trim(), language === "hi" ? "hi" : "en");
+        setSuccess(t("resetSent"));
+      } else if (isRegister) {
         const userCredential = await registerUser(email, password);
 
         const user = userCredential.user;
@@ -40,21 +50,23 @@ export default function LoginPage({ onLogin }) {
       } else {
         await loginUser(email, password);
       }
-      onLogin(isRegister ? accountMode : null);
-      navigate("/");
+      if (!isResetPassword) {
+        onLogin(isRegister ? accountMode : null);
+        navigate("/");
+      }
     } catch (err) {
       console.error(err);
 
       if (err.code === "auth/email-already-in-use") {
-        setError("This email is already registered.");
+        setError(t("emailInUse"));
       } else if (err.code === "auth/invalid-credential") {
-        setError("Incorrect email or password.");
+        setError(t("wrongLogin"));
       } else if (err.code === "auth/weak-password") {
-        setError("Password should be at least 6 characters.");
+        setError(t("weakPassword"));
       } else if (err.code === "auth/invalid-email") {
-        setError("Please enter a valid email.");
+        setError(t("invalidEmail"));
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(t("genericError"));
       }
     } finally {
       setLoading(false);
@@ -82,8 +94,14 @@ export default function LoginPage({ onLogin }) {
             Saheli Network
           </h1>
 
+          {isResetPassword && (
+            <h2 className="mt-3 text-lg font-semibold text-gray-800">
+              {t("resetPassword")}
+            </h2>
+          )}
+
           <p className="text-gray-500 mt-2 text-center">
-            {t("tagline")}
+            {isResetPassword ? t("resetHelp") : t("tagline")}
           </p>
 
         </div>
@@ -91,7 +109,7 @@ export default function LoginPage({ onLogin }) {
         {/* Form */}
         <form onSubmit={handleSubmit} className="mt-8">
 
-          {isRegister && (
+          {isRegister && !isResetPassword && (
             <>
               <label className="font-medium text-gray-700">
                 {t("name")}
@@ -139,23 +157,47 @@ export default function LoginPage({ onLogin }) {
             className="w-full border rounded-xl p-3 mt-2 focus:outline-none focus:ring-2 focus:ring-rose-200"
           />
 
-          <label className="font-medium text-gray-700 block mt-5">
-            {t("password")}
-          </label>
+          {!isResetPassword && (
+            <>
+              <label className="font-medium text-gray-700 block mt-5">
+                {t("password")}
+              </label>
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            className="w-full border rounded-xl p-3 mt-2 focus:outline-none focus:ring-2 focus:ring-rose-200"
-          />
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required
+                className="w-full border rounded-xl p-3 mt-2 focus:outline-none focus:ring-2 focus:ring-rose-200"
+              />
+
+              {!isRegister && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsResetPassword(true);
+                    setError("");
+                    setSuccess("");
+                  }}
+                  className="mt-2 block ml-auto text-sm font-medium text-rose-500 hover:underline"
+                >
+                  {t("forgotPassword")}
+                </button>
+              )}
+            </>
+          )}
 
           {/* Error */}
           {error && (
             <p className="text-red-500 text-sm mt-3">
               {error}
+            </p>
+          )}
+
+          {success && (
+            <p className="text-emerald-600 text-sm mt-3" role="status">
+              {success}
             </p>
           )}
 
@@ -167,6 +209,8 @@ export default function LoginPage({ onLogin }) {
           >
             {loading
               ? t("pleaseWait")
+              : isResetPassword
+              ? t("sendResetLink")
               : isRegister
               ? t("createAccount")
               : t("login")}
@@ -175,6 +219,19 @@ export default function LoginPage({ onLogin }) {
         </form>
 
         {/* Switch */}
+        {isResetPassword ? (
+          <button
+            type="button"
+            onClick={() => {
+              setIsResetPassword(false);
+              setError("");
+              setSuccess("");
+            }}
+            className="block mx-auto mt-5 text-sm text-rose-500 font-medium hover:underline"
+          >
+            {t("backToLogin")}
+          </button>
+        ) : (
         <p className="text-center text-sm text-gray-500 mt-5">
 
           {isRegister
@@ -185,6 +242,7 @@ export default function LoginPage({ onLogin }) {
             onClick={() => {
               setIsRegister(!isRegister);
               setError("");
+              setSuccess("");
             }}
             className="ml-1 text-rose-500 font-medium hover:underline"
           >
@@ -192,6 +250,7 @@ export default function LoginPage({ onLogin }) {
           </button>
 
         </p>
+        )}
 
       </motion.div>
 
