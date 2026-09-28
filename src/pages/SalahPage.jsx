@@ -201,13 +201,11 @@ Rules:
         },
       ]);
     } catch (error) {
-      console.error("AI Error:", error);
-
       setMessages((prev) => [
         ...prev,
         {
           role: "ai",
-          text: "Thodi der baad dobara try karein.",
+          text: error.message || "Thodi der baad dobara try karein.",
         },
       ]);
     } finally {

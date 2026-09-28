@@ -2,6 +2,7 @@
 import hashlib
 import hmac
 import json
+import logging
 import os
 import base64
 from io import BytesIO
@@ -23,6 +24,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from domain import earnings_summary, distance_km
 
 load_dotenv()
+logger = logging.getLogger(__name__)
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173').split(','),
                    allow_methods=['GET', 'POST', 'PATCH'], allow_headers=['Authorization', 'Content-Type'])
@@ -665,8 +667,9 @@ class Chat(StrictModel):
 
 @app.post('/api/chat')
 def chat(data: Chat, user=Depends(current_user)):
-    key, model = os.getenv('GEMINI_API_KEY'), os.getenv('GEMINI_MODEL')
-    if not key or not model:
+    key = os.getenv('GEMINI_API_KEY')
+    model = os.getenv('GEMINI_MODEL', 'gemini-3.5-flash-lite')
+    if not key:
         raise HTTPException(503, 'Saheli ki Salah is not configured yet. Please try again later.')
     from google import genai
     from google.genai import types
@@ -680,4 +683,5 @@ def chat(data: Chat, user=Depends(current_user)):
             response = client.models.generate_content(model=model, contents=[types.Content(role='user' if m.role == 'user' else 'model', parts=[types.Part(text=m.content)]) for m in data.messages], config=types.GenerateContentConfig(system_instruction=system))
         return {'reply': response.text}
     except Exception:
+        logger.exception('Gemini request failed')
         raise HTTPException(502, 'Saheli ki Salah is temporarily unavailable. Please try again.')

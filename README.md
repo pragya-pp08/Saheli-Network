@@ -126,6 +126,7 @@ pip install -r requirements.txt
 Create a `.env` file inside `backend/`:
 ```env
 GEMINI_API_KEY=YOUR_API_KEY
+GEMINI_MODEL=gemini-3.5-flash-lite
 ```
 
 Then start the server:
