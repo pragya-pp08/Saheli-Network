@@ -85,7 +85,11 @@ export default function OpportunitiesPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <p className="text-[13px] font-semibold text-gray-900 leading-tight">{o.title}</p>
-                {o.urgent && (
+                {o.isOwn ? (
+                  <span className="text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full flex-shrink-0">
+                    {t('ownPostedJob')}
+                  </span>
+                ) : o.urgent && (
                   <span className="text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-200 px-2 py-0.5 rounded-full flex-shrink-0">
                     {t('urgent')}
                   </span>
@@ -104,17 +108,20 @@ export default function OpportunitiesPage() {
               <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
                 <p className="text-[14px] font-bold text-gray-900">{o.pay}</p>
                 <motion.button
-                  whileHover={{ scale: appliedJobs.includes(o.id) ? 1 : 1.05 }}
-                  whileTap={{ scale: appliedJobs.includes(o.id) ? 1 : 0.95 }}
+                  whileHover={{ scale: appliedJobs.includes(o.id) || o.isOwn ? 1 : 1.05 }}
+                  whileTap={{ scale: appliedJobs.includes(o.id) || o.isOwn ? 1 : 0.95 }}
                   onClick={() => setSelectedJob(o)}
-                  disabled={appliedJobs.includes(o.id)}
+                  disabled={appliedJobs.includes(o.id) || o.isOwn}
+                  title={o.isOwn ? t('ownJobHelp') : undefined}
                   className={`text-[12px] font-medium px-3 py-1.5 rounded-lg transition-colors ${
-                    appliedJobs.includes(o.id)
+                    o.isOwn
+                      ? "bg-purple-100 text-purple-600 cursor-default"
+                      : appliedJobs.includes(o.id)
                       ? "bg-green-500 text-white cursor-default"
                       : "bg-rose-500 hover:bg-rose-600 text-white"
                   }`}
                 >
-                  {appliedJobs.includes(o.id) ? `✓ ${t('applied')}` : t('apply')}
+                  {o.isOwn ? t('yourJob') : appliedJobs.includes(o.id) ? `✓ ${t('applied')}` : t('apply')}
                 </motion.button>
               </div>
             </motion.div>

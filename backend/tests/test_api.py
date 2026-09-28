@@ -151,6 +151,18 @@ def test_account_modes_separate_customer_and_worker_actions(client):
     assert client.get('/customer-dashboard').status_code == 403
 
 
+def test_own_post_is_visible_but_cannot_be_applied_to(client):
+    client.patch('/profile', json={'name':'Dual Role User', 'skills':['Cooking'], 'location':'Area'})
+    switch_mode(client, 'worker', 'customer')
+    job = client.post('/opportunities', json=dict(title='Cook dinner', category='Cooking', amountPaise=50000,
+        location='Area', address='Private address', phone='1234567890', date='2026-12-01', time='Evening')).json()['id']
+    switch_mode(client, 'worker', 'worker')
+    listing = client.get('/opportunities').json()
+    assert len(listing) == 1 and listing[0]['id'] == job and listing[0]['isOwn'] is True
+    assert client.post(f'/opportunities/{job}/apply').status_code == 409
+    assert client.get('/dashboard').json()['new_opportunities'] == 0
+
+
 def test_recovery_is_private(client):
     assert client.post('/recovery-support',json={'reason':'Income loss'}).status_code == 200
     assert client.get('/recovery-status').json()['active'] is True

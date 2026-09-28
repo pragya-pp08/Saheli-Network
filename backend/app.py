@@ -195,7 +195,7 @@ def earnings(user=Depends(current_user)):
 def dashboard(user=Depends(current_user)):
     data = profile(user)
     e = data['earnings']
-    available = opportunities(user)
+    available = [job for job in opportunities(user) if not job['isOwn']]
     return dict(name=data['name'], rating=data['rating'], jobs_completed=data['jobs_completed'],
                 today_earnings=e['today'], week_earnings=e['week'],
                 monthly_progress=min(100, round(e['month'] / e['goal'] * 100)) if e['goal'] else 0,
@@ -292,15 +292,16 @@ def opportunities(user=Depends(current_user)):
     data = require_mode(user, 'worker')
     result = []
     for job in rows('jobs', 'status', 'open'):
-        if job['customerId'] == user['uid']:
-            continue
+        is_own = job['customerId'] == user['uid']
         distance = distance_km(data['coordinates'], job['coordinates']) if data.get('coordinates') and job.get('coordinates') else None
         # No exact customer address, phone, or coordinates before assignment.
         result.append(dict(id=job['id'], title=job['title'], category=job['category'], location=job['location'],
                            dist=f'{distance} km' if distance is not None else job['location'], distance=distance,
-                           time=job['date'], available_time=job['time'], pay=f"₹{job['amountPaise']/100:,.2f}", urgent=job['urgent']))
+                           time=job['date'], available_time=job['time'], pay=f"₹{job['amountPaise']/100:,.2f}",
+                           urgent=job['urgent'], isOwn=is_own))
     preferred = data.get('skills', [])
-    return sorted(result, key=lambda j: (j['category'] not in preferred, not j['urgent'], j['distance'] if j['distance'] is not None else float('inf')))
+    return sorted(result, key=lambda j: (j['isOwn'], j['category'] not in preferred, not j['urgent'],
+                                         j['distance'] if j['distance'] is not None else float('inf')))
 
 
 @app.get('/my-jobs')
