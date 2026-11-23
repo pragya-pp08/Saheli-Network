@@ -1,6 +1,8 @@
 # 🌸 Saheli Network
 
 ### Hyperlocal work, trusted connections, and financial visibility for skilled women
+### 🚀 Live Demo
+[Saheli Network – Try the Live Application](https://saheli-network.vercel.app/login)
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
